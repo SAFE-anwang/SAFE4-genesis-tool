@@ -98,6 +98,9 @@ func (storage *AccountManagerStorage) Generate(genesis *core.Genesis, allocAccou
 
 			// id2addr
 			storage.buildID2addr(&account, &allocAccountStorageKeys, addrs)
+
+			// id2useinfo
+			storage.buildID2useInfo(&account, &allocAccountStorageKeys, addrs)
 		}
 
 		if len(allocAccountStorageKeys) != 0 {
@@ -150,7 +153,7 @@ func (storage *AccountManagerStorage) LoadSuperNode() *[]types.SuperNodeInfo {
 }
 
 func (storage *AccountManagerStorage) buildRecordNo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, count int) {
-	curKey := big.NewInt(101)
+	curKey := big.NewInt(102)
 	storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(int64(count)))
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
@@ -162,7 +165,7 @@ func (storage *AccountManagerStorage) buildAddr2records(account *core.GenesisAcc
 
 	for i, addr := range addrs {
 		// size
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_address(102, addr))
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_address(103, addr))
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(1))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
@@ -172,7 +175,6 @@ func (storage *AccountManagerStorage) buildAddr2records(account *core.GenesisAcc
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(i + 1)))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-
 		// addr
 		curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
 		storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
@@ -193,9 +195,46 @@ func (storage *AccountManagerStorage) buildAddr2records(account *core.GenesisAcc
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-		// unlockheight
+		// unlockHeight
 		curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720 * 24 * 3600 / 30))
+		account.Storage[storageKey] = storageValue
+		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+	}
+}
+
+func (storage *AccountManagerStorage) buildID2index(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, addrs []common.Address) {
+	var curKey *big.Int
+	var storageKey, storageValue common.Hash
+
+	for i, _ := range addrs {
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(104, int64(i + 1)))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
+		account.Storage[storageKey] = storageValue
+		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+	}
+}
+
+func (storage *AccountManagerStorage) buildID2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, addrs []common.Address) {
+	var curKey *big.Int
+	var storageKey, storageValue common.Hash
+
+	for i, addr := range addrs {
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(105, int64(i + 1)))
+		storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
+		account.Storage[storageKey] = storageValue
+		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+	}
+}
+
+func (storage *AccountManagerStorage) buildID2useInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, addrs []common.Address) {
+	var curKey *big.Int
+	var storageKey, storageValue common.Hash
+
+	for i, addr := range addrs {
+		// specialAddr
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(105, int64(i + 1)))
+		storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 		// freezeHeight
@@ -208,38 +247,19 @@ func (storage *AccountManagerStorage) buildAddr2records(account *core.GenesisAcc
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720 * 24 * 3600 / 30))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-		// createHeight
+		// voterAddr
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(105, int64(i + 1)))
+		storageKey, storageValue = utils.GetStorage4Addr(curKey, common.Address{})
+		account.Storage[storageKey] = storageValue
+		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+		// voteHeight
 		curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-		// updateHeight
+		// releaseHeight
 		curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
-		account.Storage[storageKey] = storageValue
-		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-	}
-}
-
-func (storage *AccountManagerStorage) buildID2index(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, addrs []common.Address) {
-	var curKey *big.Int
-	var storageKey, storageValue common.Hash
-
-	for i, _ := range addrs {
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(103, int64(i + 1)))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
-		account.Storage[storageKey] = storageValue
-		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-	}
-}
-
-func (storage *AccountManagerStorage) buildID2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, addrs []common.Address) {
-	var curKey *big.Int
-	var storageKey, storageValue common.Hash
-
-	for i, addr := range addrs {
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(104, int64(i + 1)))
-		storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 	}
