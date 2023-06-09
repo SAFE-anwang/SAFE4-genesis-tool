@@ -7,7 +7,7 @@ import (
 
 func Compile(workPath string, fileName string) {
 	solcPath := workPath + "solc.exe"
-	filePath := workPath + "sys_contracts" + string(filepath.Separator)
+	filePath := workPath + "SAFE4-system-contract" + string(filepath.Separator)
 	basePath := filePath
 	includePath := filePath + ".deps" + string(filepath.Separator) + "npm"
 	dstPath := workPath + "temp"
