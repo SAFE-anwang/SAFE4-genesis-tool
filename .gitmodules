@@ -1,0 +1,3 @@
+[submodule "deps/SAFE4-system-contract"]
+	path = deps/SAFE4-system-contract
+	url = https://github.com/SAFE-anwang/SAFE4-system-contract.git
