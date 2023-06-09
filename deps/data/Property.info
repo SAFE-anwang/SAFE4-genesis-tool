@@ -1,0 +1,13 @@
+[{
+  "name": "block_space",
+  "value": 30,
+  "description": "block space",
+  "createHeight": 0,
+  "updateHeight": 0
+}, {
+  "name": "gas_price",
+  "value": 10000000,
+  "description": "gas price",
+  "createHeight": 0,
+  "updateHeight": 0
+}]
