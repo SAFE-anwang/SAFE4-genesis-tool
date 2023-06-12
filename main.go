@@ -1,6 +1,7 @@
 package main
 
 import (
+	js "github.com/dop251/goja"
 	"github.com/safe/SAFE4-genesis-tool/common"
 	"github.com/safe/SAFE4-genesis-tool/common/hexutil"
 	"github.com/safe/SAFE4-genesis-tool/contracts"
@@ -28,7 +29,16 @@ func main() {
 	ownerAddr = common.HexToAddress("0xac110c0f70867f77d9d230e377043f52480a0b7d")
 	autoGenerate()
 	genesisJson := utils.ToJson(genesis, allocAccounts, mapAllocAccountStorageKeys)
-	err = ioutil.WriteFile(workPath + "genesis.json", []byte(genesisJson), 0644)
+
+	vm := js.New()
+	strJS := `function print(str){const obj = JSON.parse(str);return JSON.stringify(obj, null, 2);};print('` + genesisJson + `');`
+	r, err := vm.RunString(strJS)
+	if err != nil {
+		panic(err)
+	}
+	v, _ := r.Export().(string)
+
+	err = ioutil.WriteFile(workPath+"genesis.json", []byte(v), 0644)
 	if err != nil {
 		panic(err)
 	}
