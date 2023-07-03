@@ -58,3 +58,10 @@ func GetStorage4Int(startKey *big.Int, data *big.Int) (common.Hash, common.Hash)
 func GetStorage4Addr(startKey *big.Int, addr common.Address) (common.Hash, common.Hash) {
 	return common.BigToHash(startKey), common.HexToHash(addr.Hex())
 }
+
+func GetStorage4Bool(startKey *big.Int, flag bool) (common.Hash, common.Hash) {
+	if flag {
+		return common.BigToHash(startKey), common.BigToHash(big.NewInt(1))
+	}
+	return common.BigToHash(startKey), common.BigToHash(big.NewInt(0))
+}

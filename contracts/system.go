@@ -23,7 +23,7 @@ func (storage *SystemStorage) Generate(genesis *core.Genesis, allocAccounts *[]c
 	utils.Compile(storage.workPath, "System.sol")
 
 	contractNames := [3]string{"System", "ProxyAdmin", "TransparentUpgradeableProxy"}
-	contractAddrs := [3]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091", "0x0000000000000000000000000000000000001092"}
+	contractAddrs := [3]string{"0x0000000000000000000000000000000000000990", "0x0000000000000000000000000000000000000991", "0x0000000000000000000000000000000000000992"}
 
 	for i, _ := range contractNames {
 		key := contractNames[i]

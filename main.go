@@ -58,6 +58,7 @@ func autoGenerate() {
 	contracts.NewSystemRewardStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewSystemStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewMulticallStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
+	contracts.NewSafe3Storage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 }
 
 func generateBase(allocAccounts *[]common.Address) {
