@@ -6,6 +6,10 @@ import (
 )
 
 func GetStorage4String(startKey *big.Int, data string) ([]common.Hash, []common.Hash) {
+	return GetStorage4Bytes(startKey, []byte(data))
+}
+
+func GetStorage4Bytes(startKey *big.Int, data []byte) ([]common.Hash, []common.Hash) {
 	var storageKeys, storageValues []common.Hash
 
 	size := len(data)
