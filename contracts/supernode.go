@@ -74,7 +74,7 @@ func (storage *SuperNodeStorage) Generate(genesis *core.Genesis, allocAccounts *
 			// sn_no
 			storage.buildSnNo(&account, &allocAccountStorageKeys, supernodes)
 
-			// properties
+			// supernodes
 			storage.buildSuperNodes(&account, &allocAccountStorageKeys, supernodes)
 
 			// snIDs
@@ -134,12 +134,12 @@ func (storage *SuperNodeStorage) buildSuperNodes(account *core.GenesisAccount, a
 		storage.calcEnode(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcIp(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcDesc(account, allocAccountStorageKeys, supernode, &curKey)
-		storage.calcState(account, allocAccountStorageKeys, supernode, &curKey)
+		storage.calcIsOfficial(account, allocAccountStorageKeys, supernode, &curKey)
+		storage.calcStateInfo(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcFounders(account, allocAccountStorageKeys, supernode, &curKey)
-		storage.calcIncentive(account, allocAccountStorageKeys, supernode, &curKey)
-		storage.calcVoters(account, allocAccountStorageKeys, supernode, &curKey)
-		storage.calcTotalVoteNum(account, allocAccountStorageKeys, supernode, &curKey)
-		storage.calcTotalVoterAmount(account, allocAccountStorageKeys, supernode, &curKey)
+		storage.calcIncentivePlan(account, allocAccountStorageKeys, supernode, &curKey)
+		storage.calcVoteInfo(account, allocAccountStorageKeys, supernode, &curKey)
+		storage.calcLastRewardHeight(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcCreateHeight(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcUpdateHeight(account, allocAccountStorageKeys, supernode, &curKey)
 	}
@@ -221,9 +221,24 @@ func (storage *SuperNodeStorage) calcDesc(account *core.GenesisAccount, allocAcc
 	}
 }
 
-func (storage *SuperNodeStorage) calcState(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorage) calcIsOfficial(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.State)
+	storageKey, storageValue := utils.GetStorage4Bool(*curKey, supernode.IsOfficial)
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+}
+
+func (storage *SuperNodeStorage) calcStateInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+	var storageKey, storageValue common.Hash
+	// state
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, big.NewInt(int64(supernode.StateInfo.State)))
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+
+	// partner
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, supernode.StateInfo.Height)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
@@ -264,7 +279,7 @@ func (storage *SuperNodeStorage) calcFounders(account *core.GenesisAccount, allo
 	}
 }
 
-func (storage *SuperNodeStorage) calcIncentive(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorage) calcIncentivePlan(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	var storageKey, storageValue common.Hash
 	// creator
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
@@ -285,16 +300,17 @@ func (storage *SuperNodeStorage) calcIncentive(account *core.GenesisAccount, all
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcVoters(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorage) calcVoteInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+	// voters
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey := common.BigToHash(*curKey)
-	storageValue := common.BigToHash(big.NewInt(int64(len(supernode.Voters))))
+	storageValue := common.BigToHash(big.NewInt(int64(len(supernode.VoteInfo.Voters))))
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 
 	subKey := big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(*curKey).Hex()))
 	var subStorageKey, subStorageValue common.Hash
-	for _, voter := range supernode.Voters {
+	for _, voter := range supernode.VoteInfo.Voters {
 		// lockID
 		subStorageKey, subStorageValue = utils.GetStorage4Int(subKey, voter.LockID)
 		account.Storage[subStorageKey] = subStorageValue
@@ -319,18 +335,29 @@ func (storage *SuperNodeStorage) calcVoters(account *core.GenesisAccount, allocA
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, subStorageKey)
 		subKey = subKey.Add(subKey, big.NewInt(1))
 	}
-}
 
-func (storage *SuperNodeStorage) calcTotalVoteNum(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+	// totalAmount
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.TotalVoteNum)
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, supernode.VoteInfo.TotalAmount)
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+
+	// totalNum
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, supernode.VoteInfo.TotalNum)
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+
+	// height
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, supernode.VoteInfo.Height)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcTotalVoterAmount(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorage) calcLastRewardHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.TotalVoterAmount)
+	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.LastRewardHeight)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }

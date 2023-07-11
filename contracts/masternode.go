@@ -74,7 +74,7 @@ func (storage *MasterNodeStorage) Generate(genesis *core.Genesis, allocAccounts 
 			// mn_no
 			storage.buildMnNo(&account, &allocAccountStorageKeys, masternodes)
 
-			// properties
+			// masternodes
 			storage.buildMasterNodes(&account, &allocAccountStorageKeys, masternodes)
 
 			// mnIDs
@@ -133,9 +133,11 @@ func (storage *MasterNodeStorage) buildMasterNodes(account *core.GenesisAccount,
 		storage.calcEnode(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcIp(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcDesc(account, allocAccountStorageKeys, masternode, &curKey)
-		storage.calcState(account, allocAccountStorageKeys, masternode, &curKey)
+		storage.calcIsOfficial(account, allocAccountStorageKeys, masternode, &curKey)
+		storage.calcStateInfo(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcFounders(account, allocAccountStorageKeys, masternode, &curKey)
-		storage.calcIncentive(account, allocAccountStorageKeys, masternode, &curKey)
+		storage.calcIncentivePlan(account, allocAccountStorageKeys, masternode, &curKey)
+		storage.calcLastRewardHeight(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcCreateHeight(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcUpdateHeight(account, allocAccountStorageKeys, masternode, &curKey)
 	}
@@ -205,9 +207,24 @@ func (storage *MasterNodeStorage) calcDesc(account *core.GenesisAccount, allocAc
 	}
 }
 
-func (storage *MasterNodeStorage) calcState(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
+func (storage *MasterNodeStorage) calcIsOfficial(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue := utils.GetStorage4Int(*curKey, masternode.State)
+	storageKey, storageValue := utils.GetStorage4Bool(*curKey, masternode.IsOfficial)
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+}
+
+func (storage *MasterNodeStorage) calcStateInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
+	var storageKey, storageValue common.Hash
+	// state
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, big.NewInt(int64(masternode.StateInfo.State)))
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+
+	// partner
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, masternode.StateInfo.Height)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
@@ -248,7 +265,7 @@ func (storage *MasterNodeStorage) calcFounders(account *core.GenesisAccount, all
 	}
 }
 
-func (storage *MasterNodeStorage) calcIncentive(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
+func (storage *MasterNodeStorage) calcIncentivePlan(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
 	var storageKey, storageValue common.Hash
 	// creator
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
@@ -265,6 +282,13 @@ func (storage *MasterNodeStorage) calcIncentive(account *core.GenesisAccount, al
 	// voter
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue = utils.GetStorage4Int(*curKey, masternode.IncentivePlan.Voter)
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+}
+
+func (storage *MasterNodeStorage) calcLastRewardHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue := utils.GetStorage4Int(*curKey, masternode.LastRewardHeight)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }

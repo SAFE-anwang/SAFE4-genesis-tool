@@ -18,6 +18,11 @@ type MasterNodeIncentivePlan struct {
 	Voter   *big.Int        `json:"voter"     gencodec:"required"`
 }
 
+type MasterNodeStateInfo struct {
+	State  	uint8           `json:"state"     gencodec:"required"`
+	Height  *big.Int        `json:"height"    gencodec:"required"`
+}
+
 type MasterNodeInfo struct {
 	Id            *big.Int                  `json:"id"            gencodec:"required"`
 	Addr          common.Address            `json:"addr"          gencodec:"required"`
@@ -26,9 +31,11 @@ type MasterNodeInfo struct {
 	Enode         string                    `json:"enode"         gencodec:"required"`
 	Ip            string                    `json:"ip"            gencodec:"required"`
 	Description   string                    `json:"description,omitempty"`
-	State               *big.Int            `json:"state"         gencodec:"required"`
+	IsOfficial    bool                      `json:"isOfficial"    gencodec:"required"`
+	StateInfo     MasterNodeStateInfo       `json:"stateInfo"     gencodec:"required"`
 	Founders      []MasterNodeMemberInfo    `json:"founders"      gencodec:"required"`
 	IncentivePlan MasterNodeIncentivePlan   `json:"incentivePlan" gencodec:"required"`
-	CreateHeight  *big.Int                  `json:"createHeight,omitempty"`
-	UpdateHeight  *big.Int                  `json:"updateHeight,omitempty"`
+	LastRewardHeight  *big.Int              `json:"lastRewardHeight" gencodec:"required"`
+	CreateHeight  *big.Int                  `json:"createHeight"  gencodec:"required"`
+	UpdateHeight  *big.Int                  `json:"updateHeight"  gencodec:"required"`
 }

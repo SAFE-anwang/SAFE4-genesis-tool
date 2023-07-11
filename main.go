@@ -88,7 +88,7 @@ func generateBase(allocAccounts *[]common.Address) {
 
 	// alloc balance to owner
 	genesis.Alloc = core.GenesisAlloc{}
-	balance, _ := new(big.Int).SetString("10000000000000000000000", 10)
+	balance, _ := new(big.Int).SetString("100000000000000000000000", 10)
 	genesis.Alloc[ownerAddr] = core.GenesisAccount{Balance: balance}
 	*allocAccounts = append(*allocAccounts, ownerAddr)
 
