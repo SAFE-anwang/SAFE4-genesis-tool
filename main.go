@@ -47,6 +47,7 @@ func main() {
 func autoGenerate() {
 	generateBase(&allocAccounts)
 	mapAllocAccountStorageKeys = make(map[common.Address][]common.Hash)
+	contracts.NewSystemStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewPropertyStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewAccountManagerStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewMasterNodeStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
@@ -56,9 +57,8 @@ func autoGenerate() {
 	contracts.NewSuperNodeStateStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewProposalStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewSystemRewardStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
-	contracts.NewSystemStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
-	contracts.NewMulticallStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewSafe3Storage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
+	contracts.NewMulticallStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 }
 
 func generateBase(allocAccounts *[]common.Address) {

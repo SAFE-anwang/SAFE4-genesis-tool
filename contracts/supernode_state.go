@@ -20,9 +20,9 @@ func NewSuperNodeStateStorage(workPath string, ownerAddr common.Address) *SuperN
 }
 
 func (storage *SuperNodeStateStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
-	utils.Compile(storage.workPath, "NodeState.sol")
+	utils.Compile(storage.workPath, "SuperNodeState.sol")
 
-	contractNames := [3]string{"NodeState", "ProxyAdmin", "TransparentUpgradeableProxy"}
+	contractNames := [3]string{"SuperNodeState", "ProxyAdmin", "TransparentUpgradeableProxy"}
 	contractAddrs := [3]string{"0x0000000000000000000000000000000000001060", "0x0000000000000000000000000000000000001061", "0x0000000000000000000000000000000000001062"}
 
 	for i, _ := range contractNames {

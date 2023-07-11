@@ -20,9 +20,9 @@ func NewMasterNodeStateStorage(workPath string, ownerAddr common.Address) *Maste
 }
 
 func (storage *MasterNodeStateStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
-	utils.Compile(storage.workPath, "NodeState.sol")
+	utils.Compile(storage.workPath, "MasterNodeState.sol")
 
-	contractNames := [3]string{"NodeState", "ProxyAdmin", "TransparentUpgradeableProxy"}
+	contractNames := [3]string{"MasterNodeState", "ProxyAdmin", "TransparentUpgradeableProxy"}
 	contractAddrs := [3]string{"0x0000000000000000000000000000000000001050", "0x0000000000000000000000000000000000001051", "0x0000000000000000000000000000000000001052"}
 
 	for i, _ := range contractNames {
