@@ -27,8 +27,8 @@ func NewSafe3Storage(workPath string, ownerAddr common.Address) *Safe3Storage {
 func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
 	utils.Compile(storage.workPath, "Safe3.sol")
 
-	infos := storage.loadInfos()
-	lockInfos := storage.loadLockedInfos()
+	//infos := storage.loadInfos()
+	//lockInfos := storage.loadLockedInfos()
 
 	contractNames := [3]string{"Safe3", "ProxyAdmin", "TransparentUpgradeableProxy"}
 	contractAddrs := [3]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091", "0x0000000000000000000000000000000000001092"}
@@ -74,23 +74,23 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(common.HexToAddress(contractAddrs[1]).Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
 
-			// num
-			storage.buildNum(&account, &allocAccountStorageKeys, infos)
-
-			// addrs
-			storage.buildKeyIDs(&account, &allocAccountStorageKeys, infos)
-
-			// availables
-			storage.buildAvailables(&account, &allocAccountStorageKeys, infos)
-
-			// lockNum
-			storage.buildLockedNum(&account, &allocAccountStorageKeys, lockInfos)
-
-			// lockedAddrs
-			storage.buildLockedKeyIDs(&account, &allocAccountStorageKeys, lockInfos)
-
-			// locks
-			storage.buildLocks(&account, &allocAccountStorageKeys, lockInfos)
+			//// num
+			//storage.buildNum(&account, &allocAccountStorageKeys, infos)
+			//
+			//// addrs
+			//storage.buildKeyIDs(&account, &allocAccountStorageKeys, infos)
+			//
+			//// availables
+			//storage.buildAvailables(&account, &allocAccountStorageKeys, infos)
+			//
+			//// lockNum
+			//storage.buildLockedNum(&account, &allocAccountStorageKeys, lockInfos)
+			//
+			//// lockedAddrs
+			//storage.buildLockedKeyIDs(&account, &allocAccountStorageKeys, lockInfos)
+			//
+			//// locks
+			//storage.buildLocks(&account, &allocAccountStorageKeys, lockInfos)
 		}
 
 		if len(allocAccountStorageKeys) != 0 {
