@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	js "github.com/dop251/goja"
 	"github.com/safe/SAFE4-genesis-tool/common"
 	"github.com/safe/SAFE4-genesis-tool/common/hexutil"
@@ -42,6 +44,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	autoABI()
 }
 
 func autoGenerate() {
@@ -105,4 +109,26 @@ func generateBase(allocAccounts *[]common.Address) {
 		genesis.Alloc[supernode.Addr] = core.GenesisAccount{Balance: supernode.Amount}
 		*allocAccounts = append(*allocAccounts, supernode.Addr)
 	}
+}
+
+func autoABI() {
+	contractNames := []string{"Property", "AccountManager", "MasterNode", "SuperNode", "SNVote", "MasterNodeState", "SuperNodeState", "Proposal", "SystemReward", "Safe3", "Multicall"}
+	var abis []string
+	for _, fileName := range contractNames {
+		utils.GetABI(workPath, fileName + ".sol")
+		abiFile := workPath + "temp" + string(filepath.Separator) + fileName + ".abi"
+		content, err := os.ReadFile(abiFile)
+		if err != nil {
+			panic(err)
+		}
+		abis = append(abis, string(content))
+		os.RemoveAll(workPath + "temp")
+	}
+	var temp string
+	temp += "package systemcontracts"
+	for i, fileName := range contractNames {
+		str, _ := json.Marshal(abis[i])
+		temp += fmt.Sprintf("\n\nconst %sABI = %s", fileName, str)
+	}
+	ioutil.WriteFile(workPath+"contract_abi.go", []byte(temp), 0644)
 }
