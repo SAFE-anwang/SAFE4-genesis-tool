@@ -94,4 +94,10 @@
      "description": "freeze day for record which used in vote supernode",
      "createHeight": 0,
      "updateHeight": 0
+}, {
+     "name": "miner_reward_percent",
+     "value": 10,
+     "description": "reward percent for miner(0 - 100)",
+     "createHeight": 0,
+     "updateHeight": 0
 }]
