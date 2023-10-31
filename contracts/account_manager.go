@@ -87,6 +87,9 @@ func (storage *AccountManagerStorage) Generate(genesis *core.Genesis, allocAccou
 			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(common.HexToAddress(contractAddrs[1]).Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
 
+			// balances
+			//storage.buildBalances(&account, &allocAccountStorageKeys, addrs, amounts)
+
 			// record_no
 			storage.buildRecordNo(&account, &allocAccountStorageKeys, len(addrs))
 

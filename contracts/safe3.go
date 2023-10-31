@@ -274,7 +274,7 @@ func (storage *Safe3Storage) buildLockedNum(account *core.GenesisAccount, allocA
 }
 
 func (storage *Safe3Storage) buildLockedKeyIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, infos *[]types.Safe3LockInfo) {
-	storageKey := common.BigToHash(big.NewInt(102))
+	storageKey := common.BigToHash(big.NewInt(105))
 	storageValue := common.BigToHash(big.NewInt(int64(len(*infos))))
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)

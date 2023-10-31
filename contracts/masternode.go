@@ -84,7 +84,7 @@ func (storage *MasterNodeStorage) Generate(genesis *core.Genesis, allocAccounts 
 			storage.buildMnID2addr(&account, &allocAccountStorageKeys, masternodes)
 
 			// mnIP2addr
-			storage.buildMnIP2addr(&account, &allocAccountStorageKeys, masternodes)
+			storage.buildMnEnode2addr(&account, &allocAccountStorageKeys, masternodes)
 		}
 
 		if len(allocAccountStorageKeys) != 0 {
@@ -131,7 +131,6 @@ func (storage *MasterNodeStorage) buildMasterNodes(account *core.GenesisAccount,
 		storage.calcCreator(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcAmount(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcEnode(account, allocAccountStorageKeys, masternode, &curKey)
-		storage.calcIp(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcDesc(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcIsOfficial(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcStateInfo(account, allocAccountStorageKeys, masternode, &curKey)
@@ -183,18 +182,6 @@ func (storage *MasterNodeStorage) calcEnode(account *core.GenesisAccount, allocA
 	}
 }
 
-func (storage *MasterNodeStorage) calcIp(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
-	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKeys, storageValues := utils.GetStorage4String(*curKey, masternode.Ip)
-	if len(storageKeys) != len(storageValues) {
-		panic("get storage failed")
-	}
-	for i, _ := range storageKeys {
-		account.Storage[storageKeys[i]] = storageValues[i]
-		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
-	}
-}
-
 func (storage *MasterNodeStorage) calcDesc(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKeys, storageValues := utils.GetStorage4String(*curKey, masternode.Description)
@@ -218,11 +205,11 @@ func (storage *MasterNodeStorage) calcStateInfo(account *core.GenesisAccount, al
 	var storageKey, storageValue common.Hash
 	// state
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue = utils.GetStorage4Int(*curKey, big.NewInt(int64(masternode.StateInfo.State)))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, masternode.StateInfo.State)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 
-	// partner
+	// height
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue = utils.GetStorage4Int(*curKey, masternode.StateInfo.Height)
 	account.Storage[storageKey] = storageValue
@@ -331,9 +318,9 @@ func (storage *MasterNodeStorage) buildMnID2addr(account *core.GenesisAccount, a
 	}
 }
 
-func (storage *MasterNodeStorage) buildMnIP2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternodes *[]types.MasterNodeInfo) {
+func (storage *MasterNodeStorage) buildMnEnode2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternodes *[]types.MasterNodeInfo) {
 	for _, masternode := range *masternodes {
-		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(105, masternode.Ip))
+		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(105, masternode.Enode))
 		storageKey, storageValue := utils.GetStorage4Addr(curKey, masternode.Addr)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)

@@ -146,7 +146,7 @@ func (storage *SuperNodeStateStorage) buildId2State(account *core.GenesisAccount
 
 	for _, sn := range *supernodes {
 		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(103, sn.Id.Int64()))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(1))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, sn.StateInfo.State)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 	}

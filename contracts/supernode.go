@@ -83,8 +83,11 @@ func (storage *SuperNodeStorage) Generate(genesis *core.Genesis, allocAccounts *
 			// snID2addr
 			storage.buildSnID2addr(&account, &allocAccountStorageKeys, supernodes)
 
+			// snName2addr
+			storage.buildSnName2addr(&account, &allocAccountStorageKeys, supernodes)
+
 			// snIP2addr
-			storage.buildSnIP2addr(&account, &allocAccountStorageKeys, supernodes)
+			storage.buildSnEnode2addr(&account, &allocAccountStorageKeys, supernodes)
 		}
 
 		if len(allocAccountStorageKeys) != 0 {
@@ -132,7 +135,6 @@ func (storage *SuperNodeStorage) buildSuperNodes(account *core.GenesisAccount, a
 		storage.calcCreator(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcAmount(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcEnode(account, allocAccountStorageKeys, supernode, &curKey)
-		storage.calcIp(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcDesc(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcIsOfficial(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcStateInfo(account, allocAccountStorageKeys, supernode, &curKey)
@@ -197,18 +199,6 @@ func (storage *SuperNodeStorage) calcEnode(account *core.GenesisAccount, allocAc
 	}
 }
 
-func (storage *SuperNodeStorage) calcIp(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
-	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKeys, storageValues := utils.GetStorage4String(*curKey, supernode.Ip)
-	if len(storageKeys) != len(storageValues) {
-		panic("get storage failed")
-	}
-	for i, _ := range storageKeys {
-		account.Storage[storageKeys[i]] = storageValues[i]
-		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
-	}
-}
-
 func (storage *SuperNodeStorage) calcDesc(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKeys, storageValues := utils.GetStorage4String(*curKey, supernode.Description)
@@ -232,11 +222,11 @@ func (storage *SuperNodeStorage) calcStateInfo(account *core.GenesisAccount, all
 	var storageKey, storageValue common.Hash
 	// state
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue = utils.GetStorage4Int(*curKey, big.NewInt(int64(supernode.StateInfo.State)))
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, supernode.StateInfo.State)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 
-	// partner
+	// height
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue = utils.GetStorage4Int(*curKey, supernode.StateInfo.Height)
 	account.Storage[storageKey] = storageValue
@@ -400,9 +390,18 @@ func (storage *SuperNodeStorage) buildSnID2addr(account *core.GenesisAccount, al
 	}
 }
 
-func (storage *SuperNodeStorage) buildSnIP2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+func (storage *SuperNodeStorage) buildSnName2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
 	for _, supernode := range *supernodes {
-		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(105, supernode.Ip))
+		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(105, supernode.Name))
+		storageKey, storageValue := utils.GetStorage4Addr(curKey, supernode.Addr)
+		account.Storage[storageKey] = storageValue
+		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+	}
+}
+
+func (storage *SuperNodeStorage) buildSnEnode2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+	for _, supernode := range *supernodes {
+		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(106, supernode.Enode))
 		storageKey, storageValue := utils.GetStorage4Addr(curKey, supernode.Addr)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)

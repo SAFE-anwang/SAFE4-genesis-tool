@@ -146,7 +146,7 @@ func (storage *MasterNodeStateStorage) buildId2State(account *core.GenesisAccoun
 
 	for _, mn := range *masternodes {
 		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(103, mn.Id.Int64()))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(1))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, mn.StateInfo.State)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 	}

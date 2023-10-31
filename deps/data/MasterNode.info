@@ -4,7 +4,6 @@
     "creator": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
     "amount": 1000000000000000000000,
     "enode": "enode://211956d5d5f89c5d9d7a6d4402afa5eac41568ffe32d4e05bd63ba440329c866ecb8f60e275336a3b35a58eca352844445344eb4a322733496c811732fb0d903@10.0.0.202:30303",
-    "ip": "10.0.0.202",
     "description": "official masternode1",
     "isOfficial": true,
     "stateInfo": {
