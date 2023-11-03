@@ -56,6 +56,9 @@ func GetStorage4Bytes(startKey *big.Int, data []byte) ([]common.Hash, []common.H
 }
 
 func GetStorage4Int(startKey *big.Int, data *big.Int) (common.Hash, common.Hash) {
+	if data == nil {
+		return common.BigToHash(startKey), common.Hash{}
+	}
 	return common.BigToHash(startKey), common.BigToHash(data)
 }
 
