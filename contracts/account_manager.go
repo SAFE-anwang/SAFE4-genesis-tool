@@ -235,7 +235,7 @@ func (storage *AccountManagerStorage) buildID2useInfo(account *core.GenesisAccou
 	var storageKey, storageValue common.Hash
 
 	for i, addr := range addrs {
-		// specialAddr
+		// frozenAddr
 		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(106, int64(i + 1)))
 		storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
 		account.Storage[storageKey] = storageValue
@@ -250,7 +250,7 @@ func (storage *AccountManagerStorage) buildID2useInfo(account *core.GenesisAccou
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720 * 24 * 3600 / 30))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-		// voterAddr
+		// votedAddr
 		curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
 		storageKey, storageValue = utils.GetStorage4Addr(curKey, common.Address{})
 		account.Storage[storageKey] = storageValue
