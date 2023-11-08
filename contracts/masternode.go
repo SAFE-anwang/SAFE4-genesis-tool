@@ -97,7 +97,7 @@ func (storage *MasterNodeStorage) Generate(genesis *core.Genesis, allocAccounts 
 }
 
 func (storage *MasterNodeStorage) load() *[]types.MasterNodeInfo {
-	jsonFile, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "MasterNode.info")
+	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "MasterNode.info")
 	if err != nil {
 		panic(err)
 	}

@@ -100,7 +100,7 @@ func (storage *SuperNodeStorage) Generate(genesis *core.Genesis, allocAccounts *
 }
 
 func (storage *SuperNodeStorage) load() *[]types.SuperNodeInfo {
-	jsonFile, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "SuperNode.info")
+	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "SuperNode.info")
 	if err != nil {
 		panic(err)
 	}

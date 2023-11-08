@@ -103,7 +103,7 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 }
 
 func (storage *Safe3Storage) loadInfos() *[]types.Safe3Info {
-	file, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "availables.info")
+	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "availables.info")
 	if err != nil {
 		panic(err)
 	}
@@ -131,7 +131,7 @@ func (storage *Safe3Storage) loadInfos() *[]types.Safe3Info {
 }
 
 func (storage *Safe3Storage) loadMNs() map[string]string {
-	jsonFile, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "masternodes.info")
+	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "masternodes.info")
 	if err != nil {
 		panic(err)
 	}
@@ -162,7 +162,7 @@ func (storage *Safe3Storage) loadMNs() map[string]string {
 func (storage *Safe3Storage) loadLockedInfos() *[]types.Safe3LockInfo {
 	masternodes := storage.loadMNs()
 
-	file, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "locks.info")
+	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "locks.info")
 	if err != nil {
 		panic(err)
 	}

@@ -116,7 +116,7 @@ func (storage *AccountManagerStorage) Generate(genesis *core.Genesis, allocAccou
 }
 
 func (storage *AccountManagerStorage) LoadMasterNode() *[]types.MasterNodeInfo {
-	jsonFile, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "MasterNode.info")
+	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "MasterNode.info")
 	if err != nil {
 		panic(err)
 	}
@@ -136,7 +136,7 @@ func (storage *AccountManagerStorage) LoadMasterNode() *[]types.MasterNodeInfo {
 }
 
 func (storage *AccountManagerStorage) LoadSuperNode() *[]types.SuperNodeInfo {
-	jsonFile, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "SuperNode.info")
+	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "SuperNode.info")
 	if err != nil {
 		panic(err)
 	}

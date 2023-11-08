@@ -88,7 +88,7 @@ func (storage *PropertyStorage) Generate(genesis *core.Genesis, allocAccounts *[
 }
 
 func (storage *PropertyStorage) load() *[]types.PropertyInfo {
-	jsonFile, err := os.Open(storage.workPath + "data" + string(filepath.Separator) + "Property.info")
+	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "Property.info")
 	if err != nil {
 		panic(err)
 	}
