@@ -133,7 +133,6 @@ func (storage *SuperNodeStorage) buildSuperNodes(account *core.GenesisAccount, a
 		storage.calcName(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcAddr(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcCreator(account, allocAccountStorageKeys, supernode, &curKey)
-		storage.calcAmount(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcEnode(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcDesc(account, allocAccountStorageKeys, supernode, &curKey)
 		storage.calcIsOfficial(account, allocAccountStorageKeys, supernode, &curKey)
@@ -176,13 +175,6 @@ func (storage *SuperNodeStorage) calcAddr(account *core.GenesisAccount, allocAcc
 func (storage *SuperNodeStorage) calcCreator(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Addr(*curKey, supernode.Creator)
-	account.Storage[storageKey] = storageValue
-	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-}
-
-func (storage *SuperNodeStorage) calcAmount(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
-	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.Amount)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }

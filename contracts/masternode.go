@@ -129,7 +129,6 @@ func (storage *MasterNodeStorage) buildMasterNodes(account *core.GenesisAccount,
 		storage.calcId(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcAddr(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcCreator(account, allocAccountStorageKeys, masternode, &curKey)
-		storage.calcAmount(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcEnode(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcDesc(account, allocAccountStorageKeys, masternode, &curKey)
 		storage.calcIsOfficial(account, allocAccountStorageKeys, masternode, &curKey)
@@ -159,13 +158,6 @@ func (storage *MasterNodeStorage) calcAddr(account *core.GenesisAccount, allocAc
 func (storage *MasterNodeStorage) calcCreator(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Addr(*curKey, masternode.Creator)
-	account.Storage[storageKey] = storageValue
-	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-}
-
-func (storage *MasterNodeStorage) calcAmount(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, masternode types.MasterNodeInfo, curKey **big.Int) {
-	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue := utils.GetStorage4Int(*curKey, masternode.Amount)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
