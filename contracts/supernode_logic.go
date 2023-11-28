@@ -10,22 +10,22 @@ import (
 	"path/filepath"
 )
 
-type SystemStorage struct {
-	workPath string
+type SuperNodeLogicStorage struct {
+	workPath  string
 	ownerAddr common.Address
 }
 
-func NewSystemStorage(workPath string, ownerAddr common.Address) *SystemStorage {
-	return &SystemStorage{workPath: workPath, ownerAddr: ownerAddr}
+func NewSuperNodeLogicStorage(workPath string, ownerAddr common.Address) *SuperNodeLogicStorage {
+	return &SuperNodeLogicStorage{workPath: workPath, ownerAddr: ownerAddr}
 }
 
-func (storage *SystemStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
-	utils.Compile(storage.workPath, "System.sol")
+func (storage *SuperNodeLogicStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
+	utils.Compile(storage.workPath, "SuperNodeLogic.sol")
 
-	contractNames := [3]string{"System", "ProxyAdmin", "TransparentUpgradeableProxy"}
-	contractAddrs := [3]string{"0x0000000000000000000000000000000000000990", "0x0000000000000000000000000000000000000991", "0x0000000000000000000000000000000000000992"}
+	contractNames := [2]string{"TransparentUpgradeableProxy", "SuperNodeLogic"}
+	contractAddrs := [2]string{"0x0000000000000000000000000000000000001035", "0x0000000000000000000000000000000000001036"}
 
-	for i, _ := range contractNames {
+	for i := range contractNames {
 		key := contractNames[i]
 		value := contractAddrs[i]
 
@@ -40,18 +40,15 @@ func (storage *SystemStorage) Generate(genesis *core.Genesis, allocAccounts *[]c
 			panic(err)
 		}
 
-		account := core.GenesisAccount{
-			Balance: big.NewInt(0),
-			Code: bs,
-		}
 		addr := common.HexToAddress(value)
 		*allocAccounts = append(*allocAccounts, addr)
+
+		account := core.GenesisAccount{
+			Balance: big.NewInt(0),
+			Code:    bs,
+		}
 		var allocAccountStorageKeys []common.Hash
-		if key == "ProxyAdmin" {
-			account.Storage = make(map[common.Hash]common.Hash)
-			account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr.Hex())
-			allocAccountStorageKeys = append(allocAccountStorageKeys, common.BigToHash(big.NewInt(0)))
-		} else if key == "TransparentUpgradeableProxy" {
+		if key == "TransparentUpgradeableProxy" {
 			account.Storage = make(map[common.Hash]common.Hash)
 
 			account.Storage[common.BigToHash(big.NewInt(0))] = common.BigToHash(big.NewInt(1))
@@ -62,8 +59,8 @@ func (storage *SystemStorage) Generate(genesis *core.Genesis, allocAccounts *[]c
 
 			account.Storage[common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")] = common.HexToHash(common.HexToAddress(contractAddrs[0]).Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"))
-			
-			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(common.HexToAddress(contractAddrs[1]).Hex())
+
+			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr.Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
 		}
 

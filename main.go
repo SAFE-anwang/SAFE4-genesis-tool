@@ -51,11 +51,13 @@ func main() {
 func autoGenerate() {
 	generateBase(&allocAccounts)
 	mapAllocAccountStorageKeys = make(map[common.Address][]common.Hash)
-	contracts.NewSystemStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
+	contracts.NewProxyAdminStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewPropertyStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewAccountManagerStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
-	contracts.NewMasterNodeStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
-	contracts.NewSuperNodeStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
+	contracts.NewMasterNodeStorageStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
+	contracts.NewMasterNodeLogicStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
+	contracts.NewSuperNodeStorageStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
+	contracts.NewSuperNodeLogicStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewSNVoteStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewMasterNodeStateStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
 	contracts.NewSuperNodeStateStorage(workPath, ownerAddr).Generate(&genesis, &allocAccounts, &mapAllocAccountStorageKeys)
@@ -112,7 +114,7 @@ func generateBase(allocAccounts *[]common.Address) {
 }
 
 func autoABI() {
-	contractNames := []string{"Property", "AccountManager", "MasterNode", "SuperNode", "SNVote", "MasterNodeState", "SuperNodeState", "Proposal", "SystemReward", "Safe3", "Multicall"}
+	contractNames := []string{"Property", "AccountManager", "MasterNodeStorage", "MasterNodeLogic", "SuperNodeStorage", "SuperNodeLogic", "SNVote", "MasterNodeState", "SuperNodeState", "Proposal", "SystemReward", "Safe3", "Multicall"}
 	var abis []string
 	for _, fileName := range contractNames {
 		utils.GetABI(workPath, fileName + ".sol")

@@ -10,20 +10,20 @@ import (
 	"path/filepath"
 )
 
-type SystemRewardStorage struct {
+type MasterNodeLogicStorage struct {
 	workPath  string
 	ownerAddr common.Address
 }
 
-func NewSystemRewardStorage(workPath string, ownerAddr common.Address) *SystemRewardStorage {
-	return &SystemRewardStorage{workPath: workPath, ownerAddr: ownerAddr}
+func NewMasterNodeLogicStorage(workPath string, ownerAddr common.Address) *MasterNodeLogicStorage {
+	return &MasterNodeLogicStorage{workPath: workPath, ownerAddr: ownerAddr}
 }
 
-func (storage *SystemRewardStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
-	utils.Compile(storage.workPath, "SystemReward.sol")
+func (storage *MasterNodeLogicStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
+	utils.Compile(storage.workPath, "MasterNodeLogic.sol")
 
-	contractNames := [2]string{"TransparentUpgradeableProxy", "SystemReward"}
-	contractAddrs := [2]string{"0x0000000000000000000000000000000000001080", "0x0000000000000000000000000000000000001081"}
+	contractNames := [2]string{"TransparentUpgradeableProxy", "MasterNodeLogic"}
+	contractAddrs := [2]string{"0x0000000000000000000000000000000000001025", "0x0000000000000000000000000000000000001026"}
 
 	for i := range contractNames {
 		key := contractNames[i]
@@ -62,6 +62,7 @@ func (storage *SystemRewardStorage) Generate(genesis *core.Genesis, allocAccount
 
 			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr.Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
+
 		}
 
 		if len(allocAccountStorageKeys) != 0 {

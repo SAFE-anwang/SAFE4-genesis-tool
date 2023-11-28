@@ -14,7 +14,7 @@ import (
 )
 
 type AccountManagerStorage struct {
-	workPath string
+	workPath  string
 	ownerAddr common.Address
 }
 
@@ -42,10 +42,10 @@ func (storage *AccountManagerStorage) Generate(genesis *core.Genesis, allocAccou
 		amounts = append(amounts, supernode.Amount)
 	}
 
-	contractNames := [3]string{"AccountManager", "ProxyAdmin", "TransparentUpgradeableProxy"}
-	contractAddrs := [3]string{"0x0000000000000000000000000000000000001010", "0x0000000000000000000000000000000000001011", "0x0000000000000000000000000000000000001012"}
+	contractNames := [2]string{"TransparentUpgradeableProxy", "AccountManager"}
+	contractAddrs := [2]string{"0x0000000000000000000000000000000000001010", "0x0000000000000000000000000000000000001011"}
 
-	for i, _ := range contractNames {
+	for i := range contractNames {
 		key := contractNames[i]
 		value := contractAddrs[i]
 
@@ -60,18 +60,15 @@ func (storage *AccountManagerStorage) Generate(genesis *core.Genesis, allocAccou
 			panic(err)
 		}
 
-		account := core.GenesisAccount{
-			Balance: big.NewInt(0),
-			Code: bs,
-		}
 		addr := common.HexToAddress(value)
 		*allocAccounts = append(*allocAccounts, addr)
+
+		account := core.GenesisAccount{
+			Balance: big.NewInt(0),
+			Code:    bs,
+		}
 		var allocAccountStorageKeys []common.Hash
-		if key == "ProxyAdmin" {
-			account.Storage = make(map[common.Hash]common.Hash)
-			account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr.Hex())
-			allocAccountStorageKeys = append(allocAccountStorageKeys, common.BigToHash(big.NewInt(0)))
-		} else if key == "TransparentUpgradeableProxy" {
+		if key == "TransparentUpgradeableProxy" {
 			account.Balance = totalAmount
 			account.Storage = make(map[common.Hash]common.Hash)
 
@@ -83,8 +80,8 @@ func (storage *AccountManagerStorage) Generate(genesis *core.Genesis, allocAccou
 
 			account.Storage[common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")] = common.HexToHash(common.HexToAddress(contractAddrs[0]).Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"))
-			
-			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(common.HexToAddress(contractAddrs[1]).Hex())
+
+			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr.Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
 
 			// balances
@@ -175,7 +172,7 @@ func (storage *AccountManagerStorage) buildAddr2records(account *core.GenesisAcc
 
 		// id
 		curKey = big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(i + 1)))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(i+1)))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 		// addr
@@ -200,7 +197,7 @@ func (storage *AccountManagerStorage) buildAddr2records(account *core.GenesisAcc
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 		// unlockHeight
 		curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720 * 24 * 3600 / 30))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720*24*3600/30))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 	}
@@ -210,8 +207,8 @@ func (storage *AccountManagerStorage) buildID2index(account *core.GenesisAccount
 	var curKey *big.Int
 	var storageKey, storageValue common.Hash
 
-	for i, _ := range addrs {
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(104, int64(i + 1)))
+	for i := range addrs {
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(104, int64(i+1)))
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
@@ -223,7 +220,7 @@ func (storage *AccountManagerStorage) buildID2addr(account *core.GenesisAccount,
 	var storageKey, storageValue common.Hash
 
 	for i, addr := range addrs {
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(105, int64(i + 1)))
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(105, int64(i+1)))
 		storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
@@ -236,7 +233,7 @@ func (storage *AccountManagerStorage) buildID2useInfo(account *core.GenesisAccou
 
 	for i, addr := range addrs {
 		// frozenAddr
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(106, int64(i + 1)))
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(106, int64(i+1)))
 		storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
@@ -247,7 +244,7 @@ func (storage *AccountManagerStorage) buildID2useInfo(account *core.GenesisAccou
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 		// unfreezeHeight
 		curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720 * 24 * 3600 / 30))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720*24*3600/30))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 		// votedAddr

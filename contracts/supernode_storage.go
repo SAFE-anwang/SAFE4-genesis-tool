@@ -13,24 +13,24 @@ import (
 	"path/filepath"
 )
 
-type SuperNodeStorage struct {
-	workPath string
+type SuperNodeStorageStorage struct {
+	workPath  string
 	ownerAddr common.Address
 }
 
-func NewSuperNodeStorage(workPath string, ownerAddr common.Address) *SuperNodeStorage {
-	return &SuperNodeStorage{workPath: workPath, ownerAddr: ownerAddr}
+func NewSuperNodeStorageStorage(workPath string, ownerAddr common.Address) *SuperNodeStorageStorage {
+	return &SuperNodeStorageStorage{workPath: workPath, ownerAddr: ownerAddr}
 }
 
-func (storage *SuperNodeStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
-	utils.Compile(storage.workPath, "SuperNode.sol")
+func (storage *SuperNodeStorageStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
+	utils.Compile(storage.workPath, "SuperNodeStorage.sol")
 
 	supernodes := storage.load()
 
-	contractNames := [3]string{"SuperNode", "ProxyAdmin", "TransparentUpgradeableProxy"}
-	contractAddrs := [3]string{"0x0000000000000000000000000000000000001030", "0x0000000000000000000000000000000000001031", "0x0000000000000000000000000000000000001032"}
+	contractNames := [2]string{"TransparentUpgradeableProxy", "SuperNodeStorage"}
+	contractAddrs := [2]string{"0x0000000000000000000000000000000000001030", "0x0000000000000000000000000000000000001031"}
 
-	for i, _ := range contractNames {
+	for i := range contractNames {
 		key := contractNames[i]
 		value := contractAddrs[i]
 
@@ -45,18 +45,15 @@ func (storage *SuperNodeStorage) Generate(genesis *core.Genesis, allocAccounts *
 			panic(err)
 		}
 
-		account := core.GenesisAccount{
-			Balance: big.NewInt(0),
-			Code: bs,
-		}
 		addr := common.HexToAddress(value)
 		*allocAccounts = append(*allocAccounts, addr)
+
+		account := core.GenesisAccount{
+			Balance: big.NewInt(0),
+			Code:    bs,
+		}
 		var allocAccountStorageKeys []common.Hash
-		if key == "ProxyAdmin" {
-			account.Storage = make(map[common.Hash]common.Hash)
-			account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr.Hex())
-			allocAccountStorageKeys = append(allocAccountStorageKeys, common.BigToHash(big.NewInt(0)))
-		} else if key == "TransparentUpgradeableProxy" {
+		if key == "TransparentUpgradeableProxy" {
 			account.Storage = make(map[common.Hash]common.Hash)
 
 			account.Storage[common.BigToHash(big.NewInt(0))] = common.BigToHash(big.NewInt(1))
@@ -67,27 +64,27 @@ func (storage *SuperNodeStorage) Generate(genesis *core.Genesis, allocAccounts *
 
 			account.Storage[common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")] = common.HexToHash(common.HexToAddress(contractAddrs[0]).Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"))
-			
-			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(common.HexToAddress(contractAddrs[1]).Hex())
+
+			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr.Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
 
-			// sn_no
-			storage.buildSnNo(&account, &allocAccountStorageKeys, supernodes)
+			// no
+			storage.buildNo(&account, &allocAccountStorageKeys, supernodes)
 
-			// supernodes
-			storage.buildSuperNodes(&account, &allocAccountStorageKeys, supernodes)
+			// addr2info
+			storage.buildAddr2Info(&account, &allocAccountStorageKeys, supernodes)
 
-			// snIDs
-			storage.buildSnIDs(&account, &allocAccountStorageKeys, supernodes)
+			// ids
+			storage.buildIDs(&account, &allocAccountStorageKeys, supernodes)
 
-			// snID2addr
-			storage.buildSnID2addr(&account, &allocAccountStorageKeys, supernodes)
+			// id2addr
+			storage.buildID2Addr(&account, &allocAccountStorageKeys, supernodes)
 
-			// snName2addr
-			storage.buildSnName2addr(&account, &allocAccountStorageKeys, supernodes)
+			// name2addr
+			storage.buildName2Addr(&account, &allocAccountStorageKeys, supernodes)
 
-			// snIP2addr
-			storage.buildSnEnode2addr(&account, &allocAccountStorageKeys, supernodes)
+			// enode2addr
+			storage.buildEnode2Addr(&account, &allocAccountStorageKeys, supernodes)
 		}
 
 		if len(allocAccountStorageKeys) != 0 {
@@ -99,7 +96,7 @@ func (storage *SuperNodeStorage) Generate(genesis *core.Genesis, allocAccounts *
 	os.RemoveAll(storage.workPath + "temp")
 }
 
-func (storage *SuperNodeStorage) load() *[]types.SuperNodeInfo {
+func (storage *SuperNodeStorageStorage) load() *[]types.SuperNodeInfo {
 	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "SuperNode.info")
 	if err != nil {
 		panic(err)
@@ -119,14 +116,14 @@ func (storage *SuperNodeStorage) load() *[]types.SuperNodeInfo {
 	return supernodes
 }
 
-func (storage *SuperNodeStorage) buildSnNo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+func (storage *SuperNodeStorageStorage) buildNo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
 	curKey := big.NewInt(101)
 	storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(int64(len(*supernodes))))
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) buildSuperNodes(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+func (storage *SuperNodeStorageStorage) buildAddr2Info(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
 	var curKey *big.Int
 	for _, supernode := range *supernodes {
 		storage.calcId(account, allocAccountStorageKeys, supernode, &curKey)
@@ -146,71 +143,71 @@ func (storage *SuperNodeStorage) buildSuperNodes(account *core.GenesisAccount, a
 	}
 }
 
-func (storage *SuperNodeStorage) calcId(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcId(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_address(102, supernode.Addr))
 	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.Id)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcName(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcName(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKeys, storageValues := utils.GetStorage4String(*curKey, supernode.Name)
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
 }
 
-func (storage *SuperNodeStorage) calcAddr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcAddr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Addr(*curKey, supernode.Addr)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcCreator(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcCreator(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Addr(*curKey, supernode.Creator)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcEnode(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcEnode(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKeys, storageValues := utils.GetStorage4String(*curKey, supernode.Enode)
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
 }
 
-func (storage *SuperNodeStorage) calcDesc(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcDesc(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKeys, storageValues := utils.GetStorage4String(*curKey, supernode.Description)
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
 }
 
-func (storage *SuperNodeStorage) calcIsOfficial(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcIsOfficial(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Bool(*curKey, supernode.IsOfficial)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcStateInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcStateInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	var storageKey, storageValue common.Hash
 	// state
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
@@ -225,7 +222,7 @@ func (storage *SuperNodeStorage) calcStateInfo(account *core.GenesisAccount, all
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcFounders(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcFounders(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey := common.BigToHash(*curKey)
 	storageValue := common.BigToHash(big.NewInt(int64(len(supernode.Founders))))
@@ -261,7 +258,7 @@ func (storage *SuperNodeStorage) calcFounders(account *core.GenesisAccount, allo
 	}
 }
 
-func (storage *SuperNodeStorage) calcIncentivePlan(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcIncentivePlan(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	var storageKey, storageValue common.Hash
 	// creator
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
@@ -282,7 +279,7 @@ func (storage *SuperNodeStorage) calcIncentivePlan(account *core.GenesisAccount,
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcVoteInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcVoteInfo(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	// voters
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey := common.BigToHash(*curKey)
@@ -337,28 +334,28 @@ func (storage *SuperNodeStorage) calcVoteInfo(account *core.GenesisAccount, allo
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcLastRewardHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcLastRewardHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.LastRewardHeight)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcCreateHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcCreateHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.CreateHeight)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) calcUpdateHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
+func (storage *SuperNodeStorageStorage) calcUpdateHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernode types.SuperNodeInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Int(*curKey, supernode.UpdateHeight)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *SuperNodeStorage) buildSnIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+func (storage *SuperNodeStorageStorage) buildIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
 	storageKey := common.BigToHash(big.NewInt(103))
 	storageValue := common.BigToHash(big.NewInt(int64(len(*supernodes))))
 	account.Storage[storageKey] = storageValue
@@ -373,7 +370,7 @@ func (storage *SuperNodeStorage) buildSnIDs(account *core.GenesisAccount, allocA
 	}
 }
 
-func (storage *SuperNodeStorage) buildSnID2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+func (storage *SuperNodeStorageStorage) buildID2Addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
 	for _, supernode := range *supernodes {
 		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(104, supernode.Id.Int64()))
 		storageKey, storageValue := utils.GetStorage4Addr(curKey, supernode.Addr)
@@ -382,7 +379,7 @@ func (storage *SuperNodeStorage) buildSnID2addr(account *core.GenesisAccount, al
 	}
 }
 
-func (storage *SuperNodeStorage) buildSnName2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+func (storage *SuperNodeStorageStorage) buildName2Addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
 	for _, supernode := range *supernodes {
 		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(105, supernode.Name))
 		storageKey, storageValue := utils.GetStorage4Addr(curKey, supernode.Addr)
@@ -391,7 +388,7 @@ func (storage *SuperNodeStorage) buildSnName2addr(account *core.GenesisAccount, 
 	}
 }
 
-func (storage *SuperNodeStorage) buildSnEnode2addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
+func (storage *SuperNodeStorageStorage) buildEnode2Addr(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, supernodes *[]types.SuperNodeInfo) {
 	for _, supernode := range *supernodes {
 		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(106, supernode.Enode))
 		storageKey, storageValue := utils.GetStorage4Addr(curKey, supernode.Addr)

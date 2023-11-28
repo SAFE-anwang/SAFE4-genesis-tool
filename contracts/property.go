@@ -14,7 +14,7 @@ import (
 )
 
 type PropertyStorage struct {
-	workPath string
+	workPath  string
 	ownerAddr common.Address
 }
 
@@ -27,10 +27,10 @@ func (storage *PropertyStorage) Generate(genesis *core.Genesis, allocAccounts *[
 
 	properties := storage.load()
 
-	contractNames := [3]string{"Property", "ProxyAdmin", "TransparentUpgradeableProxy"}
-	contractAddrs := [3]string{"0x0000000000000000000000000000000000001000", "0x0000000000000000000000000000000000001001", "0x0000000000000000000000000000000000001002"}
+	contractNames := [2]string{"TransparentUpgradeableProxy", "Property"}
+	contractAddrs := [2]string{"0x0000000000000000000000000000000000001000", "0x0000000000000000000000000000000000001001"}
 
-	for i, _ := range contractNames {
+	for i := range contractNames {
 		key := contractNames[i]
 		value := contractAddrs[i]
 
@@ -45,18 +45,15 @@ func (storage *PropertyStorage) Generate(genesis *core.Genesis, allocAccounts *[
 			panic(err)
 		}
 
-		account := core.GenesisAccount{
-			Balance: big.NewInt(0),
-			Code: bs,
-		}
 		addr := common.HexToAddress(value)
 		*allocAccounts = append(*allocAccounts, addr)
+
+		account := core.GenesisAccount{
+			Balance: big.NewInt(0),
+			Code:    bs,
+		}
 		var allocAccountStorageKeys []common.Hash
-		if key == "ProxyAdmin" {
-			account.Storage = make(map[common.Hash]common.Hash)
-			account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr.Hex())
-			allocAccountStorageKeys = append(allocAccountStorageKeys, common.BigToHash(big.NewInt(0)))
-		} else if key == "TransparentUpgradeableProxy" {
+		if key == "TransparentUpgradeableProxy" {
 			account.Storage = make(map[common.Hash]common.Hash)
 
 			account.Storage[common.BigToHash(big.NewInt(0))] = common.BigToHash(big.NewInt(1))
@@ -67,8 +64,8 @@ func (storage *PropertyStorage) Generate(genesis *core.Genesis, allocAccounts *[
 
 			account.Storage[common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")] = common.HexToHash(common.HexToAddress(contractAddrs[0]).Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"))
-			
-			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(common.HexToAddress(contractAddrs[1]).Hex())
+
+			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr.Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
 
 			// properties
@@ -124,7 +121,7 @@ func (storage *PropertyStorage) calcName(account *core.GenesisAccount, allocAcco
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
@@ -143,7 +140,7 @@ func (storage *PropertyStorage) calcDescription(account *core.GenesisAccount, al
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
@@ -176,7 +173,7 @@ func (storage *PropertyStorage) buildConfirmedNames(account *core.GenesisAccount
 		if len(subStorageKeys) != len(subStorageValues) {
 			panic("get storage failed")
 		}
-		for k, _ := range subStorageKeys {
+		for k := range subStorageKeys {
 			account.Storage[subStorageKeys[k]] = subStorageValues[k]
 			*allocAccountStorageKeys = append(*allocAccountStorageKeys, subStorageKeys[k])
 		}

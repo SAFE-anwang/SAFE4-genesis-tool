@@ -16,7 +16,7 @@ import (
 )
 
 type Safe3Storage struct {
-	workPath string
+	workPath  string
 	ownerAddr common.Address
 }
 
@@ -30,10 +30,10 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 	infos := storage.loadInfos()
 	lockInfos := storage.loadLockedInfos()
 
-	contractNames := [3]string{"Safe3", "ProxyAdmin", "TransparentUpgradeableProxy"}
-	contractAddrs := [3]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091", "0x0000000000000000000000000000000000001092"}
+	contractNames := [2]string{"TransparentUpgradeableProxy", "Safe3"}
+	contractAddrs := [2]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091"}
 
-	for i, _ := range contractNames {
+	for i := range contractNames {
 		key := contractNames[i]
 		value := contractAddrs[i]
 
@@ -48,18 +48,15 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 			panic(err)
 		}
 
-		account := core.GenesisAccount{
-			Balance: big.NewInt(0),
-			Code: bs,
-		}
 		addr := common.HexToAddress(value)
 		*allocAccounts = append(*allocAccounts, addr)
+
+		account := core.GenesisAccount{
+			Balance: big.NewInt(0),
+			Code:    bs,
+		}
 		var allocAccountStorageKeys []common.Hash
-		if key == "ProxyAdmin" {
-			account.Storage = make(map[common.Hash]common.Hash)
-			account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr.Hex())
-			allocAccountStorageKeys = append(allocAccountStorageKeys, common.BigToHash(big.NewInt(0)))
-		} else if key == "TransparentUpgradeableProxy" {
+		if key == "TransparentUpgradeableProxy" {
 			account.Storage = make(map[common.Hash]common.Hash)
 
 			account.Storage[common.BigToHash(big.NewInt(0))] = common.BigToHash(big.NewInt(1))
@@ -70,23 +67,23 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 
 			account.Storage[common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")] = common.HexToHash(common.HexToAddress(contractAddrs[0]).Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"))
-			
-			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(common.HexToAddress(contractAddrs[1]).Hex())
+
+			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr.Hex())
 			allocAccountStorageKeys = append(allocAccountStorageKeys, common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"))
 
 			// num
 			storage.buildNum(&account, &allocAccountStorageKeys, infos)
 
-			// addrs
+			// keyIDs
 			storage.buildKeyIDs(&account, &allocAccountStorageKeys, infos)
 
 			// availables
 			storage.buildAvailables(&account, &allocAccountStorageKeys, infos)
 
-			// lockNum
+			// lockedNum
 			storage.buildLockedNum(&account, &allocAccountStorageKeys, lockInfos)
 
-			// lockedAddrs
+			// lockedKeyIDs
 			storage.buildLockedKeyIDs(&account, &allocAccountStorageKeys, lockInfos)
 
 			// locks
@@ -124,8 +121,8 @@ func (storage *Safe3Storage) loadInfos() *[]types.Safe3Info {
 			continue
 		}
 		*infos = append(*infos, types.Safe3Info{Addr: addr,
-												Amount: amount,
-												RedeemHeight: big.NewInt(0)})
+			Amount:       amount,
+			RedeemHeight: big.NewInt(0)})
 	}
 	return infos
 }
@@ -193,12 +190,12 @@ func (storage *Safe3Storage) loadLockedInfos() *[]types.Safe3LockInfo {
 			isMN = true
 		}
 		*infos = append(*infos, types.Safe3LockInfo{Addr: addr,
-													Amount: amount,
-													LockHeight: lockHeight,
-													UnlockHeight: unlockHeight,
-													Txid: txid,
-													IsMN: isMN,
-													RedeemHeight: big.NewInt(0)})
+			Amount:       amount,
+			LockHeight:   lockHeight,
+			UnlockHeight: unlockHeight,
+			Txid:         txid,
+			IsMN:         isMN,
+			RedeemHeight: big.NewInt(0)})
 	}
 	return infos
 }
@@ -224,7 +221,7 @@ func (storage *Safe3Storage) buildKeyIDs(account *core.GenesisAccount, allocAcco
 		if len(subStorageKeys) != len(subStorageValues) {
 			panic("get storage failed")
 		}
-		for k, _ := range subStorageKeys {
+		for k := range subStorageKeys {
 			account.Storage[subStorageKeys[k]] = subStorageValues[k]
 			*allocAccountStorageKeys = append(*allocAccountStorageKeys, subStorageKeys[k])
 		}
@@ -246,7 +243,7 @@ func (storage *Safe3Storage) calcAddr(account *core.GenesisAccount, allocAccount
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
@@ -287,7 +284,7 @@ func (storage *Safe3Storage) buildLockedKeyIDs(account *core.GenesisAccount, all
 		if len(subStorageKeys) != len(subStorageValues) {
 			panic("get storage failed")
 		}
-		for k, _ := range subStorageKeys {
+		for k := range subStorageKeys {
 			account.Storage[subStorageKeys[k]] = subStorageValues[k]
 			*allocAccountStorageKeys = append(*allocAccountStorageKeys, subStorageKeys[k])
 		}
@@ -313,7 +310,7 @@ func (storage *Safe3Storage) calcAddr2(account *core.GenesisAccount, allocAccoun
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
@@ -346,7 +343,7 @@ func (storage *Safe3Storage) calcTxid(account *core.GenesisAccount, allocAccount
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
 	}
-	for i, _ := range storageKeys {
+	for i := range storageKeys {
 		account.Storage[storageKeys[i]] = storageValues[i]
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
 	}
