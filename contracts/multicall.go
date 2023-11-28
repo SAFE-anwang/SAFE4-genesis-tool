@@ -39,8 +39,6 @@ func (storage *MulticallStorage) Generate(genesis *core.Genesis, allocAccounts *
 		Balance: big.NewInt(0),
 		Code:    bs,
 	}
-	account.Storage = make(map[common.Hash]common.Hash)
-	account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr.Hex())
 	genesis.Alloc[addr] = account
 
 	var allocAccountStorageKeys []common.Hash
