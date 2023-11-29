@@ -79,7 +79,7 @@ func generateBase(allocAccounts *[]common.Address) {
 		ConstantinopleBlock: big.NewInt(0),
 		PetersburgBlock:     big.NewInt(0),
 		IstanbulBlock:       big.NewInt(0),
-		Spos:                &params.SposConfig{Period: 30, Epoch: 200},
+		Spos:                &params.SposConfig{Epoch: 200},
 	}
 	genesis.Nonce = 0
 	genesis.Timestamp = 0x6375F7B9
