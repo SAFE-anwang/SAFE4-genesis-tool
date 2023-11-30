@@ -78,7 +78,6 @@ func (c *CliqueConfig) String() string {
 
 // SposConfig is the consensus engine configs for SAFE-proof-of-stake based sealing.
 type SposConfig struct {
-	Period uint64 `json:"period"` // Number of seconds between blocks to enforce
 	Epoch  uint64 `json:"epoch"`  // Epoch length to reset votes and checkpoint
 }
 
