@@ -12,7 +12,7 @@ func Compile(workPath string, fileName string) {
 	dstPath := workPath + "temp"
 	openzeppelin_upgradeable_alias := "openzeppelin-contracts-upgradeable/=3rd/OpenZeppelin/openzeppelin-contracts-upgradeable/contracts/"
 	openzeppelin_alias := "openzeppelin-contracts/=3rd/OpenZeppelin/openzeppelin-contracts/contracts/"
-	cmd := exec.Command(solcPath, "--base-path", basePath, "--optimize-runs", "200", "--bin-runtime", "-o", dstPath, openzeppelin_upgradeable_alias, openzeppelin_alias, "--overwrite", filePath + fileName)
+	cmd := exec.Command(solcPath, "--base-path", basePath, "--optimize", "--optimize-runs", "200", "--bin-runtime", "-o", dstPath, openzeppelin_upgradeable_alias, openzeppelin_alias, "--overwrite", filePath + fileName)
 	_, err := cmd.Output()
 	if err != nil {
 		panic(err)
@@ -26,7 +26,7 @@ func GetABI(workPath string, fileName string) {
 	dstPath := workPath + "temp"
 	openzeppelin_upgradeable_alias := "openzeppelin-contracts-upgradeable/=3rd/OpenZeppelin/openzeppelin-contracts-upgradeable/contracts/"
 	openzeppelin_alias := "openzeppelin-contracts/=3rd/OpenZeppelin/openzeppelin-contracts/contracts/"
-	cmd := exec.Command(solcPath, "--base-path", basePath, "--optimize-runs", "200", "--abi", "-o", dstPath, openzeppelin_upgradeable_alias, openzeppelin_alias, "--overwrite", filePath + fileName)
+	cmd := exec.Command(solcPath, "--base-path", basePath, "--optimize", "--optimize-runs", "200", "--abi", "-o", dstPath, openzeppelin_upgradeable_alias, openzeppelin_alias, "--overwrite", filePath + fileName)
 	_, err := cmd.Output()
 	if err != nil {
 		panic(err)
