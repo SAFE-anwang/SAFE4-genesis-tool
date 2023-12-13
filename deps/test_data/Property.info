@@ -1,6 +1,6 @@
 [{
   "name": "block_space",
-  "value": 30,
+  "value": 1,
   "description": "block space",
   "createHeight": 0,
   "updateHeight": 0
@@ -71,7 +71,7 @@
      "createHeight": 0,
      "updateHeight": 0
 }, {
-     "name": "supernode_append_min_amount",
+     "name": "supernode_append_min_lockday",
      "value": 3,
      "description": "min lock day for appending supernode",
      "createHeight": 0,
@@ -83,7 +83,7 @@
      "createHeight": 0,
      "updateHeight": 0
 }, {
-     "name": "record_masternode_freezeday",
+     "name": "record_supernode_freezeday",
      "value": 2,
      "description": "freeze day for lockID which used in append/turn supernode",
      "createHeight": 0,
@@ -96,7 +96,7 @@
      "updateHeight": 0
 }, {
      "name": "miner_reward_percent",
-     "value": 10,
+     "value": 0,
      "description": "reward percent for miner(0 - 100)",
      "createHeight": 0,
      "updateHeight": 0

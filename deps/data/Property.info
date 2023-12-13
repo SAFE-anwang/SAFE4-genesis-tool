@@ -30,13 +30,13 @@
      "updateHeight": 0
 }, {
      "name": "masternode_min_lockday",
-     "value": 5,
+     "value": 720,
      "description": "min lock day for creating masternode",
      "createHeight": 0,
      "updateHeight": 0
 }, {
      "name": "masternode_append_min_lockday",
-     "value": 3,
+     "value": 360,
      "description": "min lock day for appending masternode",
      "createHeight": 0,
      "updateHeight": 0
@@ -66,37 +66,37 @@
      "updateHeight": 0
 }, {
      "name": "supernode_min_lockday",
-     "value": 5,
+     "value": 720,
      "description": "min lock day for creating supernode",
      "createHeight": 0,
      "updateHeight": 0
 }, {
-     "name": "supernode_append_min_amount",
-     "value": 3,
+     "name": "supernode_append_min_lockday",
+     "value": 360,
      "description": "min lock day for appending supernode",
      "createHeight": 0,
      "updateHeight": 0
 }, {
      "name": "record_masternode_freezeday",
-     "value": 2,
+     "value": 30,
      "description": "freeze day for lockID which used in append/turn masternode",
      "createHeight": 0,
      "updateHeight": 0
 }, {
-     "name": "record_masternode_freezeday",
-     "value": 2,
+     "name": "record_supernode_freezeday",
+     "value": 90,
      "description": "freeze day for lockID which used in append/turn supernode",
      "createHeight": 0,
      "updateHeight": 0
 }, {
      "name": "record_snvote_lockday",
-     "value": 1,
+     "value": 7,
      "description": "freeze day for record which used in vote supernode",
      "createHeight": 0,
      "updateHeight": 0
 }, {
      "name": "miner_reward_percent",
-     "value": 10,
+     "value": 0,
      "description": "reward percent for miner(0 - 100)",
      "createHeight": 0,
      "updateHeight": 0
