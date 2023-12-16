@@ -46,3 +46,9 @@ func Keccak256_bytes32(slot string) []byte {
 	data, _ := common.ParseHexOrString(slot)
 	return crypto.Keccak256(data)
 }
+
+func Keccak256_uint_bytes(slot int64, key []byte) []byte {
+	data2 := common.BigToHash(big.NewInt(slot)).Bytes()
+	data := append(key, data2...)
+	return crypto.Keccak256(data)
+}
