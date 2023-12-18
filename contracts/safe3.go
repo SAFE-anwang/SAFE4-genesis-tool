@@ -27,8 +27,9 @@ func NewSafe3Storage(workPath string, ownerAddr common.Address) *Safe3Storage {
 func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
 	utils.Compile(storage.workPath, "Safe3.sol")
 
-	infos := storage.loadInfos()
-	lockInfos, lockNum, addrNum := storage.loadLockedInfos()
+	totalAmount := big.NewInt(0)
+	infos := storage.loadInfos(totalAmount)
+	lockInfos, lockNum, addrNum := storage.loadLockedInfos(totalAmount)
 
 	contractNames := [2]string{"TransparentUpgradeableProxy", "Safe3"}
 	contractAddrs := [2]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091"}
@@ -57,6 +58,7 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 		}
 		var allocAccountStorageKeys []common.Hash
 		if key == "TransparentUpgradeableProxy" {
+			account.Balance = totalAmount
 			account.Storage = make(map[common.Hash]common.Hash)
 
 			account.Storage[common.BigToHash(big.NewInt(0))] = common.BigToHash(big.NewInt(1))
@@ -99,7 +101,7 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 	os.RemoveAll(storage.workPath + "temp")
 }
 
-func (storage *Safe3Storage) loadInfos() *[]types.Safe3Info {
+func (storage *Safe3Storage) loadInfos(totalAmount *big.Int) *[]types.Safe3Info {
 	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "availables.info")
 	if err != nil {
 		panic(err)
@@ -128,6 +130,7 @@ func (storage *Safe3Storage) loadInfos() *[]types.Safe3Info {
 		*infos = append(*infos, types.Safe3Info{Addr: addr,
 			Amount:       amount,
 			RedeemHeight: big.NewInt(0)})
+		totalAmount.Add(totalAmount, amount)
 	}
 	return infos
 }
@@ -144,24 +147,15 @@ func (storage *Safe3Storage) loadMNs() map[string]string {
 		panic(err)
 	}
 
-	temps := new(map[string]string)
-	err = json.Unmarshal(jsonData, temps)
+	masternodes := new(map[string]string)
+	err = json.Unmarshal(jsonData, masternodes)
 	if err != nil {
 		panic(err)
 	}
-
-	masternodes := make(map[string]string)
-	for key, value := range *temps {
-		txid := strings.Split(key, "-")[0]
-		if len(masternodes[txid]) != 0 {
-			continue
-		}
-		masternodes[txid] = value
-	}
-	return masternodes
+	return *masternodes
 }
 
-func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo, int64, int64) {
+func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][]types.Safe3LockInfo, int64, int64) {
 	masternodes := storage.loadMNs()
 
 	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "locks.info")
@@ -196,8 +190,14 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo
 		lockHeight, _ := new(big.Int).SetString(strings.TrimSpace(temps[3]), 10)
 		unlockHeight, _ := new(big.Int).SetString(strings.TrimSpace(temps[4]), 10)
 		isMN := false
+		mnState := big.NewInt(0)
 		if amount.Cmp(big.NewInt(1000000000)) >= 0 && len(masternodes[txid]) != 0 {
 			isMN = true
+			if masternodes[txid] == "ENABLED" {
+				mnState = big.NewInt(1)
+			} else {
+				mnState = big.NewInt(2)
+			}
 		}
 
 		if lockInfos[addr] == nil {
@@ -210,7 +210,9 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo
 			UnlockHeight: unlockHeight,
 			Txid:         txid,
 			IsMN:         isMN,
+			MnState:      mnState,
 			RedeemHeight: big.NewInt(0)})
+		totalAmount.Add(totalAmount, amount)
 	}
 	return lockInfos, lockNum, addrNum
 }
@@ -329,6 +331,7 @@ func (storage *Safe3Storage) buildLocks(account *core.GenesisAccount, allocAccou
 			storage.calcUnlockHeight(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcTxid(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcIsMN(account, allocAccountStorageKeys, info, &curKey)
+			storage.calcMNState(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcRedeemHeight2(account, allocAccountStorageKeys, info, &curKey)
 		}
 	}
@@ -382,6 +385,13 @@ func (storage *Safe3Storage) calcTxid(account *core.GenesisAccount, allocAccount
 func (storage *Safe3Storage) calcIsMN(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, info types.Safe3LockInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Bool(*curKey, info.IsMN)
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+}
+
+func (storage *Safe3Storage) calcMNState(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, info types.Safe3LockInfo, curKey **big.Int) {
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKey, storageValue := utils.GetStorage4Int(*curKey, info.MnState)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }

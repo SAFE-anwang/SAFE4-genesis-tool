@@ -17,5 +17,6 @@ type Safe3LockInfo struct {
 	UnlockHeight *big.Int   `json:"unlockHeight"    gencodec:"required"`
 	Txid         string     `json:"txid"            gencodec:"required"`
 	IsMN         bool       `json:"isMN"            gencodec:"required"`
+	MnState      *big.Int   `json:"MnState"         gencodec:"required"`
 	RedeemHeight *big.Int   `json:"redeemHeight"    gencodec:"required"`
 }
