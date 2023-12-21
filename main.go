@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var workPath string
@@ -28,7 +29,7 @@ func main() {
 		panic(err)
 	}
 	workPath = filepath.Dir(ex) + string(filepath.Separator)
-	ownerAddr = common.HexToAddress("0xac110c0f70867f77d9d230e377043f52480a0b7d")
+	ownerAddr = common.HexToAddress(utils.GetOwnerAddr())
 	autoGenerate()
 	genesisJson := utils.ToJson(genesis, allocAccounts, mapAllocAccountStorageKeys)
 
@@ -46,6 +47,8 @@ func main() {
 	}
 
 	autoABI()
+
+	autoABI4JS()
 }
 
 func autoGenerate() {
@@ -133,4 +136,29 @@ func autoABI() {
 		temp += fmt.Sprintf("\n\nconst %sABI = %s", fileName, str)
 	}
 	ioutil.WriteFile(workPath+"contract_abi.go", []byte(temp), 0644)
+}
+
+func autoABI4JS() {
+	contractNames := []string{"Property", "AccountManager", "MasterNodeStorage", "MasterNodeLogic", "SuperNodeStorage", "SuperNodeLogic", "SNVote", "MasterNodeState", "SuperNodeState", "Proposal", "SystemReward", "Safe3"}
+	var abis []string
+	for _, fileName := range contractNames {
+		utils.GetABI(workPath, fileName + ".sol")
+		abiFile := workPath + "temp" + string(filepath.Separator) + fileName + ".abi"
+		content, err := os.ReadFile(abiFile)
+		if err != nil {
+			panic(err)
+		}
+		abis = append(abis, string(content))
+		os.RemoveAll(workPath + "temp")
+	}
+	var temp string
+	for i, fileName := range contractNames {
+		str, _ := json.Marshal(abis[i])
+		temp += fmt.Sprintf("export const %sABI = %s as const;", fileName, str[1:len(str)-1])
+		if i != len(contractNames) - 1 {
+			temp += "\n\n"
+		}
+	}
+	temp = strings.Replace(temp, "\\", "", -1)
+	ioutil.WriteFile(workPath+"safe4_abi.ts", []byte(temp), 0644)
 }
