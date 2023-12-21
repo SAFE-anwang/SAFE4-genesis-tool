@@ -27,9 +27,10 @@ func NewSafe3Storage(workPath string, ownerAddr common.Address) *Safe3Storage {
 func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
 	utils.Compile(storage.workPath, "Safe3.sol")
 
+	lockInfos, lockAmounts, lockNum := storage.loadLockedInfos()
+
 	totalAmount := big.NewInt(0)
-	infos := storage.loadInfos(totalAmount)
-	lockInfos, lockNum, addrNum := storage.loadLockedInfos(totalAmount)
+	infos := storage.loadBalance(lockInfos, lockAmounts, totalAmount)
 
 	contractNames := [2]string{"TransparentUpgradeableProxy", "Safe3"}
 	contractAddrs := [2]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091"}
@@ -86,7 +87,7 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 			storage.buildLockedNum(&account, &allocAccountStorageKeys, lockNum)
 
 			// lockedKeyIDs
-			storage.buildLockedKeyIDs(&account, &allocAccountStorageKeys, lockInfos, addrNum)
+			storage.buildLockedKeyIDs(&account, &allocAccountStorageKeys, lockInfos)
 
 			// locks
 			storage.buildLocks(&account, &allocAccountStorageKeys, lockInfos)
@@ -101,36 +102,41 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 	os.RemoveAll(storage.workPath + "temp")
 }
 
-func (storage *Safe3Storage) loadInfos(totalAmount *big.Int) *[]types.Safe3Info {
-	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "availables.info")
+func (storage *Safe3Storage) loadBalance(lockInfos map[string][]types.Safe3LockInfo, lockAmounts map[string]*big.Int, totalAmount *big.Int) *[]types.Safe3Info {
+	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "balanceaddress.csv")
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	ETH_COIN := new(big.Float).SetInt(big.NewInt(1000000000000000000))
+	CHANGE_COIN := big.NewInt(10000000000)
 	MIN_COIN := big.NewInt(100000000000000000) // 0.1 safe
 
 	infos := new([]types.Safe3Info)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		temps := strings.Split(line, "\t")
-		if len(temps) != 2 {
+		line = strings.Replace(line, `"`, ``, -1)
+		temps := strings.Split(line, ",")
+		if len(temps) != 6 || len(temps[1]) != 34 {
 			continue
 		}
-		addr := strings.TrimSpace(temps[0])
-		amt, _ := new(big.Float).SetString(strings.TrimSpace(temps[1]))
-		amt = amt.Mul(amt, ETH_COIN)
-		amount := new(big.Int)
-		amt.Int(amount)
+		addr := temps[1]
+		amount, _ := new(big.Int).SetString(temps[2], 10)
+		amount.Mul(amount, CHANGE_COIN)
 		if amount.Cmp(MIN_COIN) < 0 {
 			continue
 		}
-		*infos = append(*infos, types.Safe3Info{Addr: addr,
+		totalAmount.Add(totalAmount, amount)
+		lockAmount, _ := new(big.Int).SetString(temps[3], 10)
+		lockAmount.Mul(lockAmount, CHANGE_COIN)
+		if lockAmounts[addr] != nil && lockAmount.Cmp(lockAmounts[addr]) <= 0 {
+			amount.Sub(amount, lockAmounts[addr])
+		}
+		*infos = append(*infos, types.Safe3Info{
+			Addr:         addr,
 			Amount:       amount,
 			RedeemHeight: big.NewInt(0)})
-		totalAmount.Add(totalAmount, amount)
 	}
 	return infos
 }
@@ -155,56 +161,66 @@ func (storage *Safe3Storage) loadMNs() map[string]string {
 	return *masternodes
 }
 
-func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][]types.Safe3LockInfo, int64, int64) {
+func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo, map[string]*big.Int, int64) {
 	masternodes := storage.loadMNs()
 
-	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "locks.info")
+	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "lockedaddresses.csv")
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	addrNum := int64(0)
 	lockNum := int64(0)
 	lockInfos := make(map[string][]types.Safe3LockInfo)
+	lockAmounts := make(map[string]*big.Int)
 
 	ETH_COIN := new(big.Float).SetInt(big.NewInt(1000000000000000000))
 	MIN_COIN := big.NewInt(100000000000000000) // 0.1 safe
+	SAFE3_END_HEIGHT := big.NewInt(5000000)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		temps := strings.Split(line, "\t")
-		if len(temps) != 5 {
+		line = strings.Replace(line, `"`, ``, -1)
+		temps := strings.Split(line, ",")
+		if len(temps) != 7 || len(temps[2]) != 34 {
 			continue
 		}
-		addr := strings.TrimSpace(temps[0])
-		txid := strings.TrimSpace(temps[1])
-		amt, _ := new(big.Float).SetString(strings.TrimSpace(temps[2]))
+		txid := temps[0][35:]
+		txid = strings.Replace(txid, "_", "-", 1)
+		addr := temps[2]
+		amt, _ := new(big.Float).SetString(temps[4])
 		amt.Mul(amt, ETH_COIN)
 		amount := new(big.Int)
 		amt.Int(amount)
 		if amount.Cmp(MIN_COIN) < 0 {
 			continue
 		}
-		lockHeight, _ := new(big.Int).SetString(strings.TrimSpace(temps[3]), 10)
-		unlockHeight, _ := new(big.Int).SetString(strings.TrimSpace(temps[4]), 10)
+		lockHeight, _ := new(big.Int).SetString(temps[5], 10)
+		unlockHeight, _ := new(big.Int).SetString(temps[6], 10)
 		isMN := false
 		mnState := big.NewInt(0)
-		if amount.Cmp(big.NewInt(1000000000)) >= 0 && len(masternodes[txid]) != 0 {
+		if len(masternodes[txid]) != 0 {
 			isMN = true
 			if masternodes[txid] == "ENABLED" {
 				mnState = big.NewInt(1)
 			} else {
 				mnState = big.NewInt(2)
 			}
+		} else {
+			if unlockHeight.Cmp(SAFE3_END_HEIGHT) <= 0 {
+				continue
+			}
 		}
 
-		if lockInfos[addr] == nil {
-			addrNum++
-		}
 		lockNum++
-		lockInfos[addr] = append(lockInfos[addr], types.Safe3LockInfo{Addr: addr,
+		if lockAmounts[addr] == nil {
+			lockAmounts[addr] = amount
+		} else {
+			lockAmounts[addr].Add(lockAmounts[addr], amount)
+		}
+		lockInfos[addr] = append(lockInfos[addr], types.Safe3LockInfo{
+			Addr:         addr,
 			Amount:       amount,
 			LockHeight:   lockHeight,
 			UnlockHeight: unlockHeight,
@@ -212,9 +228,8 @@ func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][
 			IsMN:         isMN,
 			MnState:      mnState,
 			RedeemHeight: big.NewInt(0)})
-		totalAmount.Add(totalAmount, amount)
 	}
-	return lockInfos, lockNum, addrNum
+	return lockInfos, lockAmounts, lockNum
 }
 
 func (storage *Safe3Storage) buildNum(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, infos *[]types.Safe3Info) {
@@ -287,9 +302,9 @@ func (storage *Safe3Storage) buildLockedNum(account *core.GenesisAccount, allocA
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
-func (storage *Safe3Storage) buildLockedKeyIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, infos map[string][]types.Safe3LockInfo, addrNum int64) {
+func (storage *Safe3Storage) buildLockedKeyIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, infos map[string][]types.Safe3LockInfo) {
 	storageKey := common.BigToHash(big.NewInt(105))
-	storageValue := common.BigToHash(big.NewInt(addrNum))
+	storageValue := common.BigToHash(big.NewInt(int64(len(infos))))
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 
