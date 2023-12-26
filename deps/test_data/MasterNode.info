@@ -12,7 +12,7 @@
     },
     "founders": [{
       "lockID": 1,
-      "addr": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
+      "addr": "0x64ae0d18085d0c3ec202a208e96bc2fc24e4a7e8",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -38,7 +38,7 @@
     },
     "founders": [{
       "lockID": 2,
-      "addr": "0x43d0faa7f14407137796a89bb5cf3ce2236943c2",
+      "addr": "0xe3427a9898e80379f181b2a1b72741da1bb9a326",
       "amount": 1000000000000000000000,
       "height": 0
     }],
