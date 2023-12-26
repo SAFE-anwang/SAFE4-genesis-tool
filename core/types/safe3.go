@@ -15,9 +15,9 @@ type Safe3Info struct {
 type Safe3LockInfo struct {
 	Safe3Addr           string              `json:"safe3Addr"       gencodec:"required"`
 	Amount              *big.Int            `json:"amount"          gencodec:"required"`
+	Txid                string              `json:"txid"            gencodec:"required"`
 	LockHeight          *big.Int            `json:"lockHeight"      gencodec:"required"`
 	UnlockHeight        *big.Int            `json:"unlockHeight"    gencodec:"required"`
-	Txid                string              `json:"txid"            gencodec:"required"`
 	LockDay             *big.Int            `json:"lockDay"         gencodec:"required"`
 	RemainLockHeight    *big.Int            `json:"remainLockHeight" gencodec:"required"`
 	IsMN                bool                `json:"isMN"            gencodec:"required"`

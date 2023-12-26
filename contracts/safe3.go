@@ -27,11 +27,11 @@ func NewSafe3Storage(workPath string, ownerAddr common.Address) *Safe3Storage {
 func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
 	utils.Compile(storage.workPath, "Safe3.sol")
 
-	lockInfos, lockAmounts := storage.loadLockedInfos()
+	lockedInfos, lockedAmounts, lockedNum := storage.loadLockedInfos()
 
 	totalAmount := big.NewInt(0)
 	specialAmounts := storage.loadSpecialInfos()
-	availableAmounts := storage.loadBalance(lockAmounts, specialAmounts, totalAmount)
+	availableAmounts := storage.loadBalance(lockedAmounts, specialAmounts, totalAmount)
 
 	contractNames := [2]string{"TransparentUpgradeableProxy", "Safe3"}
 	contractAddrs := [2]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091"}
@@ -81,11 +81,14 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 			// availables
 			storage.buildAvailables(&account, &allocAccountStorageKeys, availableAmounts)
 
+			// lockedNum
+			storage.buildLockedNum(&account, &allocAccountStorageKeys, lockedNum)
+
 			// lockedKeyIDs
-			storage.buildLockedKeyIDs(&account, &allocAccountStorageKeys, lockInfos)
+			storage.buildLockedKeyIDs(&account, &allocAccountStorageKeys, lockedInfos)
 
 			// locks
-			storage.buildLocks(&account, &allocAccountStorageKeys, lockInfos)
+			storage.buildLocks(&account, &allocAccountStorageKeys, lockedInfos)
 
 			// specialKeyIDs
 			storage.buildSpecialKeyIDs(&account, &allocAccountStorageKeys, specialAmounts)
@@ -103,7 +106,7 @@ func (storage *Safe3Storage) Generate(genesis *core.Genesis, allocAccounts *[]co
 	os.RemoveAll(storage.workPath + "temp")
 }
 
-func (storage *Safe3Storage) loadBalance(lockAmounts map[string]*big.Int, specialAmounts map[string]*big.Int, totalAmount *big.Int) map[string]*big.Int {
+func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmounts map[string]*big.Int, totalAmount *big.Int) map[string]*big.Int {
 	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "balanceaddress.csv")
 	if err != nil {
 		panic(err)
@@ -135,12 +138,12 @@ func (storage *Safe3Storage) loadBalance(lockAmounts map[string]*big.Int, specia
 			continue
 		}
 
-		lockAmount, _ := new(big.Int).SetString(temps[3], 10)
-		lockAmount.Mul(lockAmount, CHANGE_COIN)
-		if lockAmounts[addr] != nil && lockAmount.Cmp(lockAmounts[addr]) <= 0 {
-			lockAmount = lockAmounts[addr]
+		lockedAmount, _ := new(big.Int).SetString(temps[3], 10)
+		lockedAmount.Mul(lockedAmount, CHANGE_COIN)
+		if lockedAmounts[addr] != nil && lockedAmount.Cmp(lockedAmounts[addr]) <= 0 {
+			lockedAmount = lockedAmounts[addr]
 		}
-		availableAmounts[addr] = big.NewInt(amount.Int64() - lockAmount.Int64())
+		availableAmounts[addr] = big.NewInt(0).Sub(amount, lockedAmount)
 	}
 	return availableAmounts
 }
@@ -195,7 +198,7 @@ func (storage *Safe3Storage) loadMNs() map[string]string {
 	return *masternodes
 }
 
-func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo, map[string]*big.Int) {
+func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo, map[string]*big.Int, int64) {
 	masternodes := storage.loadMNs()
 
 	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "lockedaddresses.csv")
@@ -204,8 +207,9 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo
 	}
 	defer file.Close()
 
-	lockInfos := make(map[string][]types.Safe3LockInfo)
-	lockAmounts := make(map[string]*big.Int)
+	lockedInfos := make(map[string][]types.Safe3LockInfo)
+	lockedAmounts := make(map[string]*big.Int)
+	lockedNum := int64(0)
 
 	ETH_COIN := new(big.Float).SetInt(big.NewInt(1000000000000000000))
 	MIN_COIN := big.NewInt(100000000000000000) // 0.1 safe
@@ -267,24 +271,29 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo
 			remainLockHeight.Add(remainLockHeight, big.NewInt(unlockHeight.Int64() - SAFE3_END_HEIGHT.Int64()))
 		}
 
-		if lockAmounts[addr] == nil {
-			lockAmounts[addr] = amount
-		} else {
-			lockAmounts[addr].Add(lockAmounts[addr], amount)
+		if isMN && lockDay.Int64() < 720 {
+			lockDay = big.NewInt(720)
 		}
-		lockInfos[addr] = append(lockInfos[addr], types.Safe3LockInfo{
+
+		lockedNum++
+		if lockedAmounts[addr] == nil {
+			lockedAmounts[addr] = amount
+		} else {
+			lockedAmounts[addr] = big.NewInt(0).Add(lockedAmounts[addr], amount)
+		}
+		lockedInfos[addr] = append(lockedInfos[addr], types.Safe3LockInfo{
 			Safe3Addr:        addr,
 			Amount:           amount,
+			Txid:             txid,
 			LockHeight:       lockHeight,
 			UnlockHeight:     unlockHeight,
-			Txid:             txid,
 			LockDay:          lockDay,
 			RemainLockHeight: remainLockHeight,
 			IsMN:             isMN,
 			MnState:          mnState,
 		})
 	}
-	return lockInfos, lockAmounts
+	return lockedInfos, lockedAmounts, lockedNum
 }
 
 func (storage *Safe3Storage) buildKeyIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, availableAmounts map[string]*big.Int) {
@@ -337,13 +346,20 @@ func (storage *Safe3Storage) calcAmount(account *core.GenesisAccount, allocAccou
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
+func (storage *Safe3Storage) buildLockedNum(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, lockedNum int64) {
+	curKey := big.NewInt(103)
+	storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(lockedNum))
+	account.Storage[storageKey] = storageValue
+	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
+}
+
 func (storage *Safe3Storage) buildLockedKeyIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, infos map[string][]types.Safe3LockInfo) {
-	storageKey := common.BigToHash(big.NewInt(103))
+	storageKey := common.BigToHash(big.NewInt(104))
 	storageValue := common.BigToHash(big.NewInt(int64(len(infos))))
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 
-	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(103))
+	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(104))
 
 	i := int64(0)
 	for addr, _ := range infos {
@@ -367,7 +383,7 @@ func (storage *Safe3Storage) buildLocks(account *core.GenesisAccount, allocAccou
 
 	for addr, list := range infos {
 		// size
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(104, getKeyIDFromAddress(addr)))
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(105, getKeyIDFromAddress(addr)))
 		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(len(list))))
 		account.Storage[storageKey] = storageValue
 		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
@@ -377,13 +393,14 @@ func (storage *Safe3Storage) buildLocks(account *core.GenesisAccount, allocAccou
 		for _, info := range list {
 			storage.calcSafe3Addr2(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcAmount2(account, allocAccountStorageKeys, info, &curKey)
+			storage.calcTxid(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcLockHeight(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcUnlockHeight(account, allocAccountStorageKeys, info, &curKey)
-			storage.calcTxid(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcLockDay(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcRemainLockHeight(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcIsMN(account, allocAccountStorageKeys, info, &curKey)
 			storage.calcMNState(account, allocAccountStorageKeys, info, &curKey)
+			curKey = curKey.Add(curKey, big.NewInt(2))
 		}
 	}
 }
@@ -407,6 +424,18 @@ func (storage *Safe3Storage) calcAmount2(account *core.GenesisAccount, allocAcco
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 }
 
+func (storage *Safe3Storage) calcTxid(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, info types.Safe3LockInfo, curKey **big.Int) {
+	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+	storageKeys, storageValues := utils.GetStorage4String(*curKey, info.Txid)
+	if len(storageKeys) != len(storageValues) {
+		panic("get storage failed")
+	}
+	for i := range storageKeys {
+		account.Storage[storageKeys[i]] = storageValues[i]
+		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
+	}
+}
+
 func (storage *Safe3Storage) calcLockHeight(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, info types.Safe3LockInfo, curKey **big.Int) {
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
 	storageKey, storageValue := utils.GetStorage4Int(*curKey, info.LockHeight)
@@ -419,18 +448,6 @@ func (storage *Safe3Storage) calcUnlockHeight(account *core.GenesisAccount, allo
 	storageKey, storageValue := utils.GetStorage4Int(*curKey, info.UnlockHeight)
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
-}
-
-func (storage *Safe3Storage) calcTxid(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, info types.Safe3LockInfo, curKey **big.Int) {
-	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKeys, storageValues := utils.GetStorage4String(*curKey, info.Txid)
-	if len(storageKeys) != len(storageValues) {
-		panic("get storage failed")
-	}
-	for i := range storageKeys {
-		account.Storage[storageKeys[i]] = storageValues[i]
-		*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKeys[i])
-	}
 }
 
 func (storage *Safe3Storage) calcLockDay(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, info types.Safe3LockInfo, curKey **big.Int) {
@@ -462,12 +479,12 @@ func (storage *Safe3Storage) calcMNState(account *core.GenesisAccount, allocAcco
 }
 
 func (storage *Safe3Storage) buildSpecialKeyIDs(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, specialAmounts map[string]*big.Int) {
-	storageKey := common.BigToHash(big.NewInt(105))
+	storageKey := common.BigToHash(big.NewInt(106))
 	storageValue := common.BigToHash(big.NewInt(int64(len(specialAmounts))))
 	account.Storage[storageKey] = storageValue
 	*allocAccountStorageKeys = append(*allocAccountStorageKeys, storageKey)
 
-	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(105))
+	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(106))
 	index := int64(0)
 	for addr, _ := range specialAmounts {
 		curKey := big.NewInt(0).Add(subKey, big.NewInt(index))
@@ -493,7 +510,7 @@ func (storage *Safe3Storage) buildSpecials(account *core.GenesisAccount, allocAc
 }
 
 func (storage *Safe3Storage) calcSafe3Addr3(account *core.GenesisAccount, allocAccountStorageKeys *[]common.Hash, addr string, curKey **big.Int) {
-	*curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(106, getKeyIDFromAddress(addr)))
+	*curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(107, getKeyIDFromAddress(addr)))
 	storageKeys, storageValues := utils.GetStorage4String(*curKey, addr)
 	if len(storageKeys) != len(storageValues) {
 		panic("get storage failed")
