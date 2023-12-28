@@ -72,3 +72,7 @@ func GetStorage4Bool(startKey *big.Int, flag bool) (common.Hash, common.Hash) {
 	}
 	return common.BigToHash(startKey), common.BigToHash(big.NewInt(0))
 }
+
+func GetStorage4Bytes32(startKey *big.Int, data [32]byte) (common.Hash, common.Hash) {
+	return common.BigToHash(startKey), data
+}
