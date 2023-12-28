@@ -114,7 +114,7 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 	defer file.Close()
 
 	CHANGE_COIN := big.NewInt(10000000000)
-	MIN_COIN := big.NewInt(100000000000000000) // 0.1 safe
+	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
 
 	availableAmounts := make(map[string]*big.Int)
 	scanner := bufio.NewScanner(file)
@@ -122,7 +122,7 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 		line := scanner.Text()
 		line = strings.Replace(line, `"`, ``, -1)
 		temps := strings.Split(line, ",")
-		if len(temps) != 6 || len(temps[1]) != 34 {
+		if len(temps) < 6 || len(temps[1]) != 34 {
 			continue
 		}
 		addr := temps[1]
@@ -156,7 +156,7 @@ func (storage *Safe3Storage) loadSpecialInfos() map[string]*big.Int {
 	defer file.Close()
 
 	CHANGE_COIN := big.NewInt(10000000000)
-	MIN_COIN := big.NewInt(100000000000000000) // 0.1 safe
+	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
 
 	specialAmounts := make(map[string]*big.Int)
 	scanner := bufio.NewScanner(file)
@@ -164,7 +164,7 @@ func (storage *Safe3Storage) loadSpecialInfos() map[string]*big.Int {
 		line := scanner.Text()
 		line = strings.Replace(line, `"`, ``, -1)
 		temps := strings.Split(line, ",")
-		if len(temps) != 6 || len(temps[1]) != 34 {
+		if len(temps) < 6 || len(temps[1]) != 34 {
 			continue
 		}
 		addr := temps[1]
@@ -212,7 +212,7 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo
 	lockedNum := int64(0)
 
 	ETH_COIN := new(big.Float).SetInt(big.NewInt(1000000000000000000))
-	MIN_COIN := big.NewInt(100000000000000000) // 0.1 safe
+	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
 	SAFE3_END_HEIGHT := big.NewInt(5000000)
 	SPOS_HEIGHT := big.NewInt(1092826)
 
@@ -221,7 +221,7 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.Safe3LockInfo
 		line := scanner.Text()
 		line = strings.Replace(line, `"`, ``, -1)
 		temps := strings.Split(line, ",")
-		if len(temps) != 7 || len(temps[2]) != 34 {
+		if len(temps) < 7 || len(temps[2]) != 34 {
 			continue
 		}
 		txid := temps[0][35:]
