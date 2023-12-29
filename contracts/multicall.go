@@ -29,7 +29,7 @@ func (storage *MulticallStorage) Generate(alloc *core.GenesisAlloc) {
 
 	account := core.GenesisAccount{
 		Balance: big.NewInt(0).String(),
-		Code:    string(code),
+		Code:    "0x" + string(code),
 	}
 	(*alloc)[common.HexToAddress("0x0000000000000000000000000000000000001100")] = account
 	os.RemoveAll(storage.workPath + "temp")

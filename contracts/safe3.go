@@ -44,7 +44,7 @@ func (storage *Safe3Storage) Generate(alloc *core.GenesisAlloc) {
 
 		account := core.GenesisAccount{
 			Balance: big.NewInt(0).String(),
-			Code:    string(code),
+			Code:    "0x" + string(code),
 		}
 		if contractNames[i] == "TransparentUpgradeableProxy" {
 			account.Balance = totalAmount.String()
