@@ -19,3 +19,12 @@ func GetOwnerAddr() string {
     }
     return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
 }
+
+func GetGenesisFile() string {
+    for _ ,v := range os.Args {
+        if v == "-test" {
+            return "genesis_test.json"
+        }
+    }
+    return "genesis.json"
+}

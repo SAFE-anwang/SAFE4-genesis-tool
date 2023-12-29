@@ -1,7 +1,6 @@
 package contracts
 
 import (
-	"encoding/hex"
 	"github.com/safe/SAFE4-genesis-tool/common"
 	"github.com/safe/SAFE4-genesis-tool/core"
 	"github.com/safe/SAFE4-genesis-tool/utils"
@@ -10,18 +9,18 @@ import (
 	"path/filepath"
 )
 
-var ProxyAdminAddr = common.HexToAddress("0x0000000000000000000000000000000000000999")
+var ProxyAdminAddr = "0x0000000000000000000000000000000000000999"
 
 type ProxyAdminStorage struct {
 	workPath  string
-	ownerAddr common.Address
+	ownerAddr string
 }
 
-func NewProxyAdminStorage(workPath string, ownerAddr common.Address) *ProxyAdminStorage {
+func NewProxyAdminStorage(workPath string, ownerAddr string) *ProxyAdminStorage {
 	return &ProxyAdminStorage{workPath: workPath, ownerAddr: ownerAddr}
 }
 
-func (storage *ProxyAdminStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
+func (storage *ProxyAdminStorage) Generate(alloc *core.GenesisAlloc) {
 	utils.Compile(storage.workPath, "3rd/OpenZeppelin/openzeppelin-contracts/contracts/proxy/transparent/ProxyAdmin.sol")
 
 	codePath := storage.workPath + "temp" + string(filepath.Separator) + "ProxyAdmin.bin-runtime"
@@ -29,24 +28,13 @@ func (storage *ProxyAdminStorage) Generate(genesis *core.Genesis, allocAccounts 
 	if err != nil {
 		panic(err)
 	}
-	bs, err := hex.DecodeString(string(code))
-	if err != nil {
-		panic(err)
-	}
-
-	*allocAccounts = append(*allocAccounts, ProxyAdminAddr)
 
 	account := core.GenesisAccount{
-		Balance: big.NewInt(0),
-		Code:    bs,
+		Balance: big.NewInt(0).String(),
+		Code:    "0x" + string(code),
 	}
 	account.Storage = make(map[common.Hash]common.Hash)
-	account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr.Hex())
-	genesis.Alloc[ProxyAdminAddr] = account
-
-	var allocAccountStorageKeys []common.Hash
-	allocAccountStorageKeys = append(allocAccountStorageKeys, common.BigToHash(big.NewInt(0)))
-	(*mapAllocAccountStorageKeys)[ProxyAdminAddr] = allocAccountStorageKeys
-
+	account.Storage[common.BigToHash(big.NewInt(0))] = common.HexToHash(storage.ownerAddr)
+	(*alloc)[common.HexToAddress(ProxyAdminAddr)] = account
 	os.RemoveAll(storage.workPath + "temp")
 }

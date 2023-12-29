@@ -1,7 +1,6 @@
 package contracts
 
 import (
-	"encoding/hex"
 	"github.com/safe/SAFE4-genesis-tool/common"
 	"github.com/safe/SAFE4-genesis-tool/core"
 	"github.com/safe/SAFE4-genesis-tool/utils"
@@ -12,14 +11,14 @@ import (
 
 type MulticallStorage struct {
 	workPath  string
-	ownerAddr common.Address
+	ownerAddr string
 }
 
-func NewMulticallStorage(workPath string, ownerAddr common.Address) *MulticallStorage {
+func NewMulticallStorage(workPath string, ownerAddr string) *MulticallStorage {
 	return &MulticallStorage{workPath: workPath, ownerAddr: ownerAddr}
 }
 
-func (storage *MulticallStorage) Generate(genesis *core.Genesis, allocAccounts *[]common.Address, mapAllocAccountStorageKeys *map[common.Address][]common.Hash) {
+func (storage *MulticallStorage) Generate(alloc *core.GenesisAlloc) {
 	utils.Compile(storage.workPath, "Multicall.sol")
 
 	codePath := storage.workPath + "temp" + string(filepath.Separator) + "Multicall.bin-runtime"
@@ -27,23 +26,11 @@ func (storage *MulticallStorage) Generate(genesis *core.Genesis, allocAccounts *
 	if err != nil {
 		panic(err)
 	}
-	bs, err := hex.DecodeString(string(code))
-	if err != nil {
-		panic(err)
-	}
-
-	addr := common.HexToAddress("0x0000000000000000000000000000000000001100")
-	*allocAccounts = append(*allocAccounts, addr)
 
 	account := core.GenesisAccount{
-		Balance: big.NewInt(0),
-		Code:    bs,
+		Balance: big.NewInt(0).String(),
+		Code:    string(code),
 	}
-	genesis.Alloc[addr] = account
-
-	var allocAccountStorageKeys []common.Hash
-	allocAccountStorageKeys = append(allocAccountStorageKeys, common.BigToHash(big.NewInt(0)))
-	(*mapAllocAccountStorageKeys)[addr] = allocAccountStorageKeys
-
+	(*alloc)[common.HexToAddress("0x0000000000000000000000000000000000001100")] = account
 	os.RemoveAll(storage.workPath + "temp")
 }
