@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	js "github.com/dop251/goja"
@@ -14,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var workPath string
@@ -37,6 +40,7 @@ func main() {
 }
 
 func autoGenerate() {
+	fmt.Println(time.Now())
 	generateBase()
 	generateAlloc()
 	contracts.NewProxyAdminStorage(workPath, ownerAddr).Generate(&genesis.Alloc)
@@ -63,11 +67,23 @@ func autoGenerate() {
 		panic(err)
 	}
 	v, _ := r.Export().(string)
+	ioutil.WriteFile(workPath+utils.GetGenesisFile(), []byte(v), 0644)
 
-	err = ioutil.WriteFile(workPath+utils.GetGenesisFile(), []byte(v), 0644)
-	if err != nil {
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	if _, err = gz.Write(b); err != nil {
 		panic(err)
 	}
+	if err = gz.Close(); err != nil {
+		panic(err)
+	}
+	fmt.Println(buf.Len())
+	var str string
+	for _, e := range buf.Bytes() {
+		str += fmt.Sprintf("\\x%02x", e)
+	}
+	ioutil.WriteFile(workPath+"genesis_zip.txt", []byte(str), 0644)
+	fmt.Println(time.Now())
 }
 
 func generateBase() {
