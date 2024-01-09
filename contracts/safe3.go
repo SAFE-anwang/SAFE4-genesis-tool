@@ -117,6 +117,11 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 		if lockedAmounts[addr] != nil && lockedAmount.Cmp(lockedAmounts[addr]) <= 0 {
 			lockedAmount = lockedAmounts[addr]
 		}
+
+		temp := big.NewInt(0).Sub(amount, lockedAmount)
+		if temp.Uint64() == 0 {
+			continue
+		}
 		availableAmounts[addr] = big.NewInt(0).Sub(amount, lockedAmount)
 	}
 	return availableAmounts
