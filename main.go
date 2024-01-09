@@ -5,7 +5,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	js "github.com/dop251/goja"
+	//js "github.com/dop251/goja"
 	"github.com/safe/SAFE4-genesis-tool/common"
 	"github.com/safe/SAFE4-genesis-tool/contracts"
 	"github.com/safe/SAFE4-genesis-tool/core"
@@ -57,32 +57,29 @@ func autoGenerate() {
 	contracts.NewSystemRewardStorage(workPath, ownerAddr).Generate(&genesis.Alloc)
 	contracts.NewSafe3Storage(workPath, ownerAddr).Generate(&genesis.Alloc)
 	contracts.NewMulticallStorage(workPath, ownerAddr).Generate(&genesis.Alloc)
+	fmt.Println(time.Now())
 
 	b, _ := json.Marshal(genesis)
 
-	vm := js.New()
-	strJS := `function print(str){const obj = JSON.parse(str);return JSON.stringify(obj, null, 2);};print('` + string(b) + `');`
-	r, err := vm.RunString(strJS)
-	if err != nil {
-		panic(err)
-	}
-	v, _ := r.Export().(string)
-	ioutil.WriteFile(workPath+utils.GetGenesisFile(), []byte(v), 0644)
+	//vm := js.New()
+	//strJS := `function print(str){const obj = JSON.parse(str);return JSON.stringify(obj, null, 2);};print('` + string(b) + `');`
+	//r, err := vm.RunString(strJS)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//v, _ := r.Export().(string)
+	//ioutil.WriteFile(workPath+utils.GetGenesisFile(), []byte(v), 0644)
+	//fmt.Println(time.Now())
 
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
-	if _, err = gz.Write(b); err != nil {
+	if _, err := gz.Write(b); err != nil {
 		panic(err)
 	}
-	if err = gz.Close(); err != nil {
+	if err := gz.Close(); err != nil {
 		panic(err)
 	}
-	fmt.Println(buf.Len())
-	var str string
-	for _, e := range buf.Bytes() {
-		str += fmt.Sprintf("\\x%02x", e)
-	}
-	ioutil.WriteFile(workPath+"genesis_zip.txt", []byte(str), 0644)
+	ioutil.WriteFile(workPath + utils.GetZipFile(), buf.Bytes(), 0644)
 	fmt.Println(time.Now())
 }
 
