@@ -88,7 +88,7 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 	defer file.Close()
 
 	CHANGE_COIN := big.NewInt(10000000000)
-	MIN_COIN := big.NewInt(1000000000000000000 - 1) // 0.1 safe
+	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
 
 	availableAmounts := make(map[string]*big.Int)
 	scanner := bufio.NewScanner(file)
@@ -130,7 +130,7 @@ func (storage *Safe3Storage) loadSpecialInfos() map[string]*big.Int {
 	defer file.Close()
 
 	CHANGE_COIN := big.NewInt(10000000000)
-	MIN_COIN := big.NewInt(1000000000000000000 - 1) // 0.1 safe
+	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
 
 	specialAmounts := make(map[string]*big.Int)
 	scanner := bufio.NewScanner(file)
@@ -186,7 +186,7 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.LockedData, m
 	lockedNum := int64(0)
 
 	ETH_COIN := new(big.Float).SetInt(big.NewInt(1000000000000000000))
-	MIN_COIN := big.NewInt(1000000000000000000 - 1) // 0.1 safe
+	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
 	SAFE3_END_HEIGHT := big.NewInt(5000000)
 	SPOS_HEIGHT := big.NewInt(1092826)
 
