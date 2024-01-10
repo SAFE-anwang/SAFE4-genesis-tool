@@ -26,10 +26,9 @@ func NewSafe3Storage(workPath string, ownerAddr string) *Safe3Storage {
 func (storage *Safe3Storage) Generate(alloc *core.GenesisAlloc) {
 	utils.Compile(storage.workPath, "Safe3.sol")
 
-	lockedInfos, lockedAmounts, lockedNum := storage.loadLockedInfos()
-
 	totalAmount := big.NewInt(0)
-	specialAmounts := storage.loadSpecialInfos()
+	lockedInfos, lockedAmounts, lockedNum := storage.loadLockedInfos(totalAmount)
+	specialAmounts := storage.loadSpecialInfos(totalAmount)
 	availableAmounts := storage.loadBalance(lockedAmounts, specialAmounts, totalAmount)
 
 	contractNames := [2]string{"TransparentUpgradeableProxy", "Safe3"}
@@ -106,7 +105,6 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 		if amount.Cmp(MIN_COIN) < 0 {
 			continue
 		}
-		totalAmount.Add(totalAmount, amount)
 
 		if specialAmounts[addr] != nil {
 			continue
@@ -119,15 +117,16 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 		}
 
 		temp := big.NewInt(0).Sub(amount, lockedAmount)
-		if temp.Uint64() == 0 {
+		if temp.Cmp(MIN_COIN) < 0 {
 			continue
 		}
-		availableAmounts[addr] = big.NewInt(0).Sub(amount, lockedAmount)
+		totalAmount.Add(totalAmount, temp)
+		availableAmounts[addr] = temp
 	}
 	return availableAmounts
 }
 
-func (storage *Safe3Storage) loadSpecialInfos() map[string]*big.Int {
+func (storage *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.Int {
 	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "specialaddress.csv")
 	if err != nil {
 		panic(err)
@@ -152,6 +151,7 @@ func (storage *Safe3Storage) loadSpecialInfos() map[string]*big.Int {
 		if amount.Cmp(MIN_COIN) < 0 {
 			continue
 		}
+		totalAmount.Add(totalAmount, amount)
 		specialAmounts[addr] = amount
 	}
 	return specialAmounts
@@ -177,7 +177,7 @@ func (storage *Safe3Storage) loadMNs() map[string]string {
 	return *masternodes
 }
 
-func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.LockedData, map[string]*big.Int, int64) {
+func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][]types.LockedData, map[string]*big.Int, int64) {
 	masternodes := storage.loadMNs()
 
 	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "lockedaddresses.csv")
@@ -248,6 +248,7 @@ func (storage *Safe3Storage) loadLockedInfos() (map[string][]types.LockedData, m
 		}
 
 		lockedNum++
+		totalAmount.Add(totalAmount, amount)
 		if lockedAmounts[addr] == nil {
 			lockedAmounts[addr] = amount
 		} else {
