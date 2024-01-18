@@ -586,6 +586,8 @@ func (storage *Safe3Storage) calcAmount3(account *core.GenesisAccount, amount *b
 }
 
 func (storage *Safe3Storage) save(value map[common.Hash]common.Hash) {
+	os.Mkdir(storage.workPath + "safe3storage", 0755)
+
 	fileIndex++
 	temp := "storage" + strconv.Itoa(fileIndex)
 	varName := "Storage" + strconv.Itoa(fileIndex)
