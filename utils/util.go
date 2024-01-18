@@ -28,12 +28,3 @@ func GetGenesisFile() string {
     }
     return "genesis.json"
 }
-
-func GetZipFile() string {
-    for _ ,v := range os.Args {
-        if v == "-test" {
-            return "genesis_test.dat"
-        }
-    }
-    return "genesis.dat"
-}

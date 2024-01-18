@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	//js "github.com/dop251/goja"
+	js "github.com/dop251/goja"
 	"github.com/safe/SAFE4-genesis-tool/common"
 	"github.com/safe/SAFE4-genesis-tool/contracts"
 	"github.com/safe/SAFE4-genesis-tool/core"
@@ -16,13 +14,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 var workPath string
 var ownerAddr string
 var genesis core.Genesis
-var allocAccounts []common.Address
 
 //var mapAllocAccountStorageKeys map[common.Address][]common.Hash
 
@@ -40,7 +36,6 @@ func main() {
 }
 
 func autoGenerate() {
-	fmt.Println(time.Now())
 	generateBase()
 	generateAlloc()
 	contracts.NewProxyAdminStorage(workPath, ownerAddr).Generate(&genesis.Alloc)
@@ -57,30 +52,21 @@ func autoGenerate() {
 	contracts.NewSystemRewardStorage(workPath, ownerAddr).Generate(&genesis.Alloc)
 	contracts.NewSafe3Storage(workPath, ownerAddr).Generate(&genesis.Alloc)
 	contracts.NewMulticallStorage(workPath, ownerAddr).Generate(&genesis.Alloc)
-	fmt.Println(time.Now())
 
 	b, _ := json.Marshal(genesis)
 
-	//vm := js.New()
-	//strJS := `function print(str){const obj = JSON.parse(str);return JSON.stringify(obj, null, 2);};print('` + string(b) + `');`
-	//r, err := vm.RunString(strJS)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//v, _ := r.Export().(string)
-	//ioutil.WriteFile(workPath+utils.GetGenesisFile(), []byte(v), 0644)
-	//fmt.Println(time.Now())
+	vm := js.New()
+	strJS := `function print(str){const obj = JSON.parse(str);return JSON.stringify(obj, null, 2);};print('` + string(b) + `');`
+	r, err := vm.RunString(strJS)
+	if err != nil {
+		panic(err)
+	}
+	v, _ := r.Export().(string)
 
-	var buf bytes.Buffer
-	gz := gzip.NewWriter(&buf)
-	if _, err := gz.Write(b); err != nil {
+	err = ioutil.WriteFile(workPath+utils.GetGenesisFile(), []byte(v), 0644)
+	if err != nil {
 		panic(err)
 	}
-	if err := gz.Close(); err != nil {
-		panic(err)
-	}
-	ioutil.WriteFile(workPath + utils.GetZipFile(), buf.Bytes(), 0644)
-	fmt.Println(time.Now())
 }
 
 func generateBase() {

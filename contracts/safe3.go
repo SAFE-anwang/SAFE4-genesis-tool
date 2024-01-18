@@ -2,7 +2,10 @@ package contracts
 
 import (
 	"bufio"
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"github.com/safe/SAFE4-genesis-tool/common"
 	"github.com/safe/SAFE4-genesis-tool/core"
 	"github.com/safe/SAFE4-genesis-tool/core/types"
@@ -11,8 +14,13 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
+
+var fileIndex = 0
+var storageList []string
+var maxNum = 100000
 
 type Safe3Storage struct {
 	workPath  string
@@ -27,9 +35,9 @@ func (storage *Safe3Storage) Generate(alloc *core.GenesisAlloc) {
 	utils.Compile(storage.workPath, "Safe3.sol")
 
 	totalAmount := big.NewInt(0)
-	lockedInfos, lockedAmounts, lockedNum := storage.loadLockedInfos(totalAmount)
+	lockedAmounts:= storage.loadLockedInfos(totalAmount)
 	specialAmounts := storage.loadSpecialInfos(totalAmount)
-	availableAmounts := storage.loadBalance(lockedAmounts, specialAmounts, totalAmount)
+	storage.loadBalance(lockedAmounts, specialAmounts, totalAmount)
 
 	contractNames := [2]string{"TransparentUpgradeableProxy", "Safe3"}
 	contractAddrs := [2]string{"0x0000000000000000000000000000000000001090", "0x0000000000000000000000000000000000001091"}
@@ -53,30 +61,34 @@ func (storage *Safe3Storage) Generate(alloc *core.GenesisAlloc) {
 			account.Storage[common.HexToHash("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")] = common.HexToHash(contractAddrs[1])
 			account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr)
 
-			// keyIDs
-			storage.buildKeyIDs(&account, availableAmounts)
-
-			// availables
-			storage.buildAvailables(&account, availableAmounts)
-
-			// lockedNum
-			storage.buildLockedNum(&account, lockedNum)
-
-			// lockedKeyIDs
-			storage.buildLockedKeyIDs(&account, lockedInfos)
-
-			// locks
-			storage.buildLocks(&account, lockedInfos)
-
 			// specialKeyIDs
 			storage.buildSpecialKeyIDs(&account, specialAmounts)
 
-			// availables
+			// specials
 			storage.buildSpecials(&account, specialAmounts)
 		}
 		(*alloc)[common.HexToAddress(contractAddrs[i])] = account
 	}
 	os.RemoveAll(storage.workPath + "temp")
+
+	fileName := storage.workPath + "safe3storage" + string(filepath.Separator) + "storage_list.go"
+	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	temp := "package safe3storage\n\n"
+	temp += "var StorageList = []string {\n"
+	for _, key := range storageList {
+		temp += "    " + key + ",\n"
+	}
+	temp += "}\n"
+
+	_, err = fmt.Fprintf(f, "%s", temp)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmounts map[string]*big.Int, totalAmount *big.Int) map[string]*big.Int {
@@ -87,7 +99,8 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 	defer file.Close()
 
 	CHANGE_COIN := big.NewInt(10000000000)
-	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
+	//MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
+	MIN_COIN := common.Big0
 
 	availableAmounts := make(map[string]*big.Int)
 	scanner := bufio.NewScanner(file)
@@ -102,7 +115,7 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 
 		amount, _ := new(big.Int).SetString(temps[2], 10)
 		amount.Mul(amount, CHANGE_COIN)
-		if amount.Cmp(MIN_COIN) < 0 {
+		if amount.Cmp(MIN_COIN) <= 0 {
 			continue
 		}
 
@@ -117,12 +130,49 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 		}
 
 		temp := big.NewInt(0).Sub(amount, lockedAmount)
-		if temp.Cmp(MIN_COIN) < 0 {
+		if temp.Cmp(MIN_COIN) <= 0 {
 			continue
 		}
 		totalAmount.Add(totalAmount, temp)
 		availableAmounts[addr] = temp
 	}
+
+	// split availables
+	temp := make(map[common.Hash]common.Hash)
+	// keyIDs
+	storageKey := common.BigToHash(big.NewInt(101))
+	storageValue := common.BigToHash(big.NewInt(int64(len(availableAmounts))))
+	temp[storageKey] = storageValue
+	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(101))
+	i := int64(0)
+	for addr, _ := range availableAmounts {
+		curKey := big.NewInt(0).Add(subKey, big.NewInt(i))
+		keyID := getKeyIDFromAddress(addr)
+		subStorageKeys, subStorageValues := utils.GetStorage4Bytes(curKey, keyID)
+		for k := range subStorageKeys {
+			temp[subStorageKeys[k]] = subStorageValues[k]
+		}
+		i++
+		if len(temp) >= maxNum {
+			storage.save(temp)
+			temp = make(map[common.Hash]common.Hash)
+		}
+	}
+	// availables
+	for addr, amount := range availableAmounts {
+		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(102, getKeyIDFromAddress(addr)))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, amount)
+		temp[storageKey] = storageValue
+		if len(temp) >= maxNum {
+			storage.save(temp)
+			temp = make(map[common.Hash]common.Hash)
+		}
+	}
+	if len(temp) >= 0 {
+		storage.save(temp)
+		temp = make(map[common.Hash]common.Hash)
+	}
+	fmt.Println(len(availableAmounts))
 	return availableAmounts
 }
 
@@ -134,7 +184,8 @@ func (storage *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*
 	defer file.Close()
 
 	CHANGE_COIN := big.NewInt(10000000000)
-	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
+	//MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
+	MIN_COIN := common.Big0
 
 	specialAmounts := make(map[string]*big.Int)
 	scanner := bufio.NewScanner(file)
@@ -148,7 +199,7 @@ func (storage *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*
 		addr := temps[1]
 		amount, _ := new(big.Int).SetString(temps[2], 10)
 		amount.Mul(amount, CHANGE_COIN)
-		if amount.Cmp(MIN_COIN) < 0 {
+		if amount.Cmp(MIN_COIN) <= 0 {
 			continue
 		}
 		totalAmount.Add(totalAmount, amount)
@@ -177,7 +228,7 @@ func (storage *Safe3Storage) loadMNs() map[string]string {
 	return *masternodes
 }
 
-func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][]types.LockedData, map[string]*big.Int, int64) {
+func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int {
 	masternodes := storage.loadMNs()
 
 	file, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "lockedaddresses.csv")
@@ -191,7 +242,8 @@ func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][
 	lockedNum := int64(0)
 
 	ETH_COIN := new(big.Float).SetInt(big.NewInt(1000000000000000000))
-	MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
+	//MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
+	MIN_COIN := common.Big0
 	SAFE3_END_HEIGHT := big.NewInt(5000000)
 	SPOS_HEIGHT := big.NewInt(1092826)
 
@@ -222,7 +274,7 @@ func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][
 			if unlockHeight.Cmp(SAFE3_END_HEIGHT) < 0 { // unlocked common-lock
 				continue
 			}
-			if amount.Cmp(MIN_COIN) < 0 {
+			if amount.Cmp(MIN_COIN) <= 0 {
 				continue
 			}
 		}
@@ -265,7 +317,105 @@ func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) (map[string][
 			IsMN:             isMN,
 		})
 	}
-	return lockedInfos, lockedAmounts, lockedNum
+
+	// split locks
+	temp := make(map[common.Hash]common.Hash)
+	// lockedNum
+	storageKey, storageValue := utils.GetStorage4Int(big.NewInt(103), big.NewInt(lockedNum))
+	temp[storageKey] = storageValue
+	// lockedKeyIDs
+	storageKey = common.BigToHash(big.NewInt(104))
+	storageValue = common.BigToHash(big.NewInt(int64(len(lockedInfos))))
+	temp[storageKey] = storageValue
+	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(104))
+	i := int64(0)
+	for addr, _ := range lockedInfos {
+		curKey := big.NewInt(0).Add(subKey, big.NewInt(i))
+		keyID := getKeyIDFromAddress(addr)
+		subStorageKeys, subStorageValues := utils.GetStorage4Bytes(curKey, keyID)
+		for k := range subStorageKeys {
+			temp[subStorageKeys[k]] = subStorageValues[k]
+		}
+		i++
+		if len(temp) >= maxNum {
+			storage.save(temp)
+			temp = make(map[common.Hash]common.Hash)
+		}
+	}
+	// locks
+	for addr, list := range lockedInfos {
+		// size
+		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(105, getKeyIDFromAddress(addr)))
+		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(len(list))))
+		temp[storageKey] = storageValue
+
+		curKey = big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
+		curKey.Sub(curKey, common.Big1)
+		for _, info := range list {
+			// txid
+			curKey.Add(curKey, common.Big1)
+			storageKey, storageValue = utils.GetStorage4Bytes32(curKey, info.Txid)
+			temp[storageKey] = storageValue
+
+			// others
+			curKey.Add(curKey, common.Big1)
+			storageKey := common.BigToHash(curKey)
+			nStorageValue := common.BigToHash(info.N) // n: 2 bytes
+			amountStorageValue := common.BigToHash(info.Amount) // amount: 12 bytes
+			lockHeightStorageValue := common.BigToHash(info.LockHeight) // lockHeight: 3 bytes
+			unlockHeightStorageValue := common.BigToHash(info.UnlockHeight) // unlockHeight: 3 bytes
+			remainLockHeightStorageValue := common.BigToHash(info.RemainLockHeight) // remainLockHeight: 3 bytes
+			lockDayStorageValue := common.BigToHash(info.LockDay) // lockDay: 2 bytes
+			isMNStorageValue := common.Hash{} // isMN: 1 bytes
+			if info.IsMN {
+				isMNStorageValue = common.BigToHash(big.NewInt(1))
+			} else {
+				isMNStorageValue = common.BigToHash(big.NewInt(0))
+			}
+
+			storageValue = common.Hash{}
+			offset := 0
+			for i := 0; i < 2; i++ {
+				storageValue[31-i-offset] = nStorageValue[31-i]
+			}
+			offset += 2
+			for i := 0; i < 12; i++ {
+				storageValue[31-i-offset] = amountStorageValue[31-i]
+			}
+			offset += 12
+			for i := 0; i < 3; i++ {
+				storageValue[31-i-offset] = lockHeightStorageValue[31-i]
+			}
+			offset += 3
+			for i := 0; i < 3; i++ {
+				storageValue[31-i-offset] = unlockHeightStorageValue[31-i]
+			}
+			offset += 3
+			for i := 0; i < 3; i++ {
+				storageValue[31-i-offset] = remainLockHeightStorageValue[31-i]
+			}
+			offset += 3
+			for i := 0; i < 2; i++ {
+				storageValue[31-i-offset] = lockDayStorageValue[31-i]
+			}
+			offset += 2
+			storageValue[31-offset] = isMNStorageValue[31]
+
+			temp[storageKey] = storageValue
+			curKey.Add(curKey, common.Big1)
+
+			if len(temp) >= maxNum {
+				storage.save(temp)
+				temp = make(map[common.Hash]common.Hash)
+			}
+		}
+	}
+	if len(temp) > 0 {
+		storage.save(temp)
+		temp = make(map[common.Hash]common.Hash)
+	}
+	fmt.Println(lockedNum)
+	return lockedAmounts
 }
 
 func (storage *Safe3Storage) buildKeyIDs(account *core.GenesisAccount, availableAmounts map[string]*big.Int) {
@@ -433,6 +583,34 @@ func (storage *Safe3Storage) buildSpecials(account *core.GenesisAccount, special
 func (storage *Safe3Storage) calcAmount3(account *core.GenesisAccount, amount *big.Int, curKey **big.Int) {
 	storageKey, storageValue := utils.GetStorage4Int(*curKey, amount)
 	account.Storage[storageKey] = storageValue
+}
+
+func (storage *Safe3Storage) save(value map[common.Hash]common.Hash) {
+	fileIndex++
+	temp := "storage" + strconv.Itoa(fileIndex)
+	varName := "Storage" + strconv.Itoa(fileIndex)
+	filePath := storage.workPath + "safe3storage" + string(filepath.Separator) + temp + ".go"
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	b, _ := json.Marshal(value)
+
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	if _, err := gz.Write(b); err != nil {
+		panic(err)
+	}
+	if err := gz.Close(); err != nil {
+		panic(err)
+	}
+
+	if _, err := fmt.Fprintf(f, "package safe3storage\n\nvar %s = %q\n", varName, buf.Bytes()); err != nil {
+		panic(err)
+	}
+	storageList = append(storageList, varName)
 }
 
 func getKeyIDFromAddress(addr string) []byte {
