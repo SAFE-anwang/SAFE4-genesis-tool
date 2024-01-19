@@ -20,15 +20,17 @@ import (
 
 var fileIndex = 0
 var storageList []string
-var maxNum = 100000
+var maxNum = 5120
+var pairs = make(map[common.Hash]common.Hash)
 
 type Safe3Storage struct {
 	workPath  string
 	ownerAddr string
+	isSaveStorage bool
 }
 
 func NewSafe3Storage(workPath string, ownerAddr string) *Safe3Storage {
-	return &Safe3Storage{workPath: workPath, ownerAddr: ownerAddr}
+	return &Safe3Storage{workPath: workPath, ownerAddr: ownerAddr, isSaveStorage: utils.IsSaveSafe3Storage()}
 }
 
 func (storage *Safe3Storage) Generate(alloc *core.GenesisAlloc) {
@@ -137,40 +139,45 @@ func (storage *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, spec
 		availableAmounts[addr] = temp
 	}
 
-	// split availables
-	temp := make(map[common.Hash]common.Hash)
-	// keyIDs
-	storageKey := common.BigToHash(big.NewInt(101))
-	storageValue := common.BigToHash(big.NewInt(int64(len(availableAmounts))))
-	temp[storageKey] = storageValue
-	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(101))
-	i := int64(0)
-	for addr, _ := range availableAmounts {
-		curKey := big.NewInt(0).Add(subKey, big.NewInt(i))
-		keyID := getKeyIDFromAddress(addr)
-		subStorageKeys, subStorageValues := utils.GetStorage4Bytes(curKey, keyID)
-		for k := range subStorageKeys {
-			temp[subStorageKeys[k]] = subStorageValues[k]
+	if storage.isSaveStorage {
+		// split availables
+		// keyIDs
+		{
+			// size
+			storageKey := common.BigToHash(big.NewInt(101))
+			storageValue := common.BigToHash(big.NewInt(int64(len(availableAmounts))))
+			pairs[storageKey] = storageValue
+			if len(pairs) >= maxNum {
+				storage.save()
+			}
+			// items
+			subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(101))
+			i := int64(0)
+			for addr, _ := range availableAmounts {
+				curKey := big.NewInt(0).Add(subKey, big.NewInt(i))
+				keyID := getKeyIDFromAddress(addr)
+				subStorageKeys, subStorageValues := utils.GetStorage4Bytes(curKey, keyID)
+				for k := range subStorageKeys {
+					pairs[subStorageKeys[k]] = subStorageValues[k]
+					if len(pairs) >= maxNum {
+						storage.save()
+					}
+				}
+				i++
+			}
 		}
-		i++
-		if len(temp) >= maxNum {
-			storage.save(temp)
-			temp = make(map[common.Hash]common.Hash)
+		// availables
+		for addr, amount := range availableAmounts {
+		    curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(102, getKeyIDFromAddress(addr)))
+			storageKey, storageValue := utils.GetStorage4Int(curKey, amount)
+			pairs[storageKey] = storageValue
+			if len(pairs) >= maxNum {
+			    storage.save()
+			}
 		}
-	}
-	// availables
-	for addr, amount := range availableAmounts {
-		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(102, getKeyIDFromAddress(addr)))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, amount)
-		temp[storageKey] = storageValue
-		if len(temp) >= maxNum {
-			storage.save(temp)
-			temp = make(map[common.Hash]common.Hash)
+		if len(pairs) >= 0 {
+			storage.save()
 		}
-	}
-	if len(temp) >= 0 {
-		storage.save(temp)
-		temp = make(map[common.Hash]common.Hash)
 	}
 	fmt.Println(len(availableAmounts))
 	return availableAmounts
@@ -318,101 +325,113 @@ func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*b
 		})
 	}
 
-	// split locks
-	temp := make(map[common.Hash]common.Hash)
-	// lockedNum
-	storageKey, storageValue := utils.GetStorage4Int(big.NewInt(103), big.NewInt(lockedNum))
-	temp[storageKey] = storageValue
-	// lockedKeyIDs
-	storageKey = common.BigToHash(big.NewInt(104))
-	storageValue = common.BigToHash(big.NewInt(int64(len(lockedInfos))))
-	temp[storageKey] = storageValue
-	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(104))
-	i := int64(0)
-	for addr, _ := range lockedInfos {
-		curKey := big.NewInt(0).Add(subKey, big.NewInt(i))
-		keyID := getKeyIDFromAddress(addr)
-		subStorageKeys, subStorageValues := utils.GetStorage4Bytes(curKey, keyID)
-		for k := range subStorageKeys {
-			temp[subStorageKeys[k]] = subStorageValues[k]
-		}
-		i++
-		if len(temp) >= maxNum {
-			storage.save(temp)
-			temp = make(map[common.Hash]common.Hash)
-		}
-	}
-	// locks
-	for addr, list := range lockedInfos {
-		// size
-		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(105, getKeyIDFromAddress(addr)))
-		storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(len(list))))
-		temp[storageKey] = storageValue
-
-		curKey = big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
-		curKey.Sub(curKey, common.Big1)
-		for _, info := range list {
-			// txid
-			curKey.Add(curKey, common.Big1)
-			storageKey, storageValue = utils.GetStorage4Bytes32(curKey, info.Txid)
-			temp[storageKey] = storageValue
-
-			// others
-			curKey.Add(curKey, common.Big1)
-			storageKey := common.BigToHash(curKey)
-			nStorageValue := common.BigToHash(info.N) // n: 2 bytes
-			amountStorageValue := common.BigToHash(info.Amount) // amount: 12 bytes
-			lockHeightStorageValue := common.BigToHash(info.LockHeight) // lockHeight: 3 bytes
-			unlockHeightStorageValue := common.BigToHash(info.UnlockHeight) // unlockHeight: 3 bytes
-			remainLockHeightStorageValue := common.BigToHash(info.RemainLockHeight) // remainLockHeight: 3 bytes
-			lockDayStorageValue := common.BigToHash(info.LockDay) // lockDay: 2 bytes
-			isMNStorageValue := common.Hash{} // isMN: 1 bytes
-			if info.IsMN {
-				isMNStorageValue = common.BigToHash(big.NewInt(1))
-			} else {
-				isMNStorageValue = common.BigToHash(big.NewInt(0))
-			}
-
-			storageValue = common.Hash{}
-			offset := 0
-			for i := 0; i < 2; i++ {
-				storageValue[31-i-offset] = nStorageValue[31-i]
-			}
-			offset += 2
-			for i := 0; i < 12; i++ {
-				storageValue[31-i-offset] = amountStorageValue[31-i]
-			}
-			offset += 12
-			for i := 0; i < 3; i++ {
-				storageValue[31-i-offset] = lockHeightStorageValue[31-i]
-			}
-			offset += 3
-			for i := 0; i < 3; i++ {
-				storageValue[31-i-offset] = unlockHeightStorageValue[31-i]
-			}
-			offset += 3
-			for i := 0; i < 3; i++ {
-				storageValue[31-i-offset] = remainLockHeightStorageValue[31-i]
-			}
-			offset += 3
-			for i := 0; i < 2; i++ {
-				storageValue[31-i-offset] = lockDayStorageValue[31-i]
-			}
-			offset += 2
-			storageValue[31-offset] = isMNStorageValue[31]
-
-			temp[storageKey] = storageValue
-			curKey.Add(curKey, common.Big1)
-
-			if len(temp) >= maxNum {
-				storage.save(temp)
-				temp = make(map[common.Hash]common.Hash)
+	if storage.isSaveStorage {
+		// split locks
+		// lockedNum
+		{
+			storageKey, storageValue := utils.GetStorage4Int(big.NewInt(103), big.NewInt(lockedNum))
+			pairs[storageKey] = storageValue
+			if len(pairs) >= maxNum {
+				storage.save()
 			}
 		}
-	}
-	if len(temp) > 0 {
-		storage.save(temp)
-		temp = make(map[common.Hash]common.Hash)
+		// lockedKeyIDs
+		{
+			// size
+			storageKey := common.BigToHash(big.NewInt(104))
+			storageValue := common.BigToHash(big.NewInt(int64(len(lockedInfos))))
+			pairs[storageKey] = storageValue
+			if len(pairs) >= maxNum {
+				storage.save()
+			}
+			// items
+			subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(104))
+			i := int64(0)
+			for addr, _ := range lockedInfos {
+				curKey := big.NewInt(0).Add(subKey, big.NewInt(i))
+				keyID := getKeyIDFromAddress(addr)
+				subStorageKeys, subStorageValues := utils.GetStorage4Bytes(curKey, keyID)
+				for k := range subStorageKeys {
+					pairs[subStorageKeys[k]] = subStorageValues[k]
+					if len(pairs) >= maxNum {
+						storage.save()
+					}
+				}
+				i++
+			}
+		}
+		// locks
+		for addr, list := range lockedInfos {
+			// size
+			curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_bytes(105, getKeyIDFromAddress(addr)))
+			storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(int64(len(list))))
+			pairs[storageKey] = storageValue
+			if len(pairs) >= maxNum {
+				storage.save()
+			}
+
+			curKey = big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
+			curKey.Sub(curKey, common.Big1)
+			for _, info := range list {
+				// txid
+				curKey.Add(curKey, common.Big1)
+				storageKey, storageValue = utils.GetStorage4Bytes32(curKey, info.Txid)
+				pairs[storageKey] = storageValue
+				if len(pairs) >= maxNum {
+					storage.save()
+				}
+
+				// others
+				curKey.Add(curKey, common.Big1)
+				storageKey = common.BigToHash(curKey)
+				nStorageValue := common.BigToHash(info.N)                               // n: 2 bytes
+				amountStorageValue := common.BigToHash(info.Amount)                     // amount: 12 bytes
+				lockHeightStorageValue := common.BigToHash(info.LockHeight)             // lockHeight: 3 bytes
+				unlockHeightStorageValue := common.BigToHash(info.UnlockHeight)         // unlockHeight: 3 bytes
+				remainLockHeightStorageValue := common.BigToHash(info.RemainLockHeight) // remainLockHeight: 3 bytes
+				lockDayStorageValue := common.BigToHash(info.LockDay)                   // lockDay: 2 bytes
+				isMNStorageValue := common.Hash{}                                       // isMN: 1 bytes
+				if info.IsMN {
+					isMNStorageValue = common.BigToHash(big.NewInt(1))
+				} else {
+					isMNStorageValue = common.BigToHash(big.NewInt(0))
+				}
+
+				storageValue = common.Hash{}
+				offset := 0
+				for i := 0; i < 2; i++ {
+					storageValue[31-i-offset] = nStorageValue[31-i]
+				}
+				offset += 2
+				for i := 0; i < 12; i++ {
+					storageValue[31-i-offset] = amountStorageValue[31-i]
+				}
+				offset += 12
+				for i := 0; i < 3; i++ {
+					storageValue[31-i-offset] = lockHeightStorageValue[31-i]
+				}
+				offset += 3
+				for i := 0; i < 3; i++ {
+					storageValue[31-i-offset] = unlockHeightStorageValue[31-i]
+				}
+				offset += 3
+				for i := 0; i < 3; i++ {
+					storageValue[31-i-offset] = remainLockHeightStorageValue[31-i]
+				}
+				offset += 3
+				for i := 0; i < 2; i++ {
+					storageValue[31-i-offset] = lockDayStorageValue[31-i]
+				}
+				offset += 2
+				storageValue[31-offset] = isMNStorageValue[31]
+
+				pairs[storageKey] = storageValue
+				if len(pairs) >= maxNum {
+					storage.save()
+				}
+				curKey.Add(curKey, common.Big1)
+			}
+		}
 	}
 	fmt.Println(lockedNum)
 	return lockedAmounts
@@ -585,7 +604,7 @@ func (storage *Safe3Storage) calcAmount3(account *core.GenesisAccount, amount *b
 	account.Storage[storageKey] = storageValue
 }
 
-func (storage *Safe3Storage) save(value map[common.Hash]common.Hash) {
+func (storage *Safe3Storage) save() {
 	os.Mkdir(storage.workPath + "safe3storage", 0755)
 
 	fileIndex++
@@ -598,7 +617,7 @@ func (storage *Safe3Storage) save(value map[common.Hash]common.Hash) {
 	}
 	defer f.Close()
 
-	b, _ := json.Marshal(value)
+	b, _ := json.Marshal(pairs)
 
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
@@ -613,6 +632,8 @@ func (storage *Safe3Storage) save(value map[common.Hash]common.Hash) {
 		panic(err)
 	}
 	storageList = append(storageList, varName)
+
+	pairs = make(map[common.Hash]common.Hash)
 }
 
 func getKeyIDFromAddress(addr string) []byte {

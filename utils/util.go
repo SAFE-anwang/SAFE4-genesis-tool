@@ -28,3 +28,12 @@ func GetGenesisFile() string {
     }
     return "genesis.json"
 }
+
+func IsSaveSafe3Storage() bool {
+    for _, v := range os.Args {
+        if v == "-safe3" {
+            return true
+        }
+    }
+    return false
+}
