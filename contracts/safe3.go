@@ -216,7 +216,7 @@ func (storage *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*
 }
 
 func (storage *Safe3Storage) loadMNs() map[string]string {
-	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "masternodes.info")
+	jsonFile, err := os.Open(storage.workPath + utils.GetDataDir() + string(filepath.Separator) + "safe3" + string(filepath.Separator) + "masternodes.csv")
 	if err != nil {
 		panic(err)
 	}
@@ -433,7 +433,7 @@ func (storage *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*b
 			}
 		}
 	}
-	fmt.Println(lockedNum)
+	fmt.Println(lockedNum, len(lockedAmounts))
 	return lockedAmounts
 }
 
