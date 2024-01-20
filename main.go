@@ -87,7 +87,7 @@ func generateBase() {
 	genesis.Timestamp = 0x6375F7B9
 	genesis.ExtraData = "0x0000000000000000000000000000000000000000000000000000000000000000"
 	genesis.GasLimit = 0xffffffff
-	genesis.Difficulty = "2"
+	genesis.Difficulty = "0x01"
 	genesis.Mixhash = common.Hash{}
 	genesis.Coinbase = common.HexToAddress(ownerAddr)
 	genesis.Number = "0"
