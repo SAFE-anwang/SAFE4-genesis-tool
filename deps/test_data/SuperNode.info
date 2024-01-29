@@ -7,10 +7,7 @@
     "enode": "enode://7d9cd0f84db59f040755bb7475fddd5190521db7373e6a3d8bf35b95727851821ab7e8dcb1ad3ea89f6a7d5d2e82e052b23a2a53ea5a9a86d708c7a02d2913c8@10.0.0.202:30303",
     "description": "official supernode1",
     "isOfficial": true,
-    "stateInfo": {
-        "state": 1,
-        "height": 0
-    },
+    "state": 1,
     "founders": [{
       "lockID": 3,
       "addr": "0x556b5868919008607ef24f4eb2bde6feda3e42f2",
@@ -21,12 +18,6 @@
       "creator": 10,
       "partner": 40,
       "voter": 50
-    },
-    "voteInfo": {
-        "voters": [],
-        "totalAmount": 0,
-        "totalNum": 0,
-        "height": 0
     },
     "lastRewardHeight": 0,
     "createHeight": 0,
@@ -40,10 +31,7 @@
     "enode": "enode://2147d6e790b948d14297e390c15a86b9c7b35d643f6a04a719954a3a7050072694c2dab15bf99e768384fa930dd4b7493da2a78d9f7ad4c855f28256e95b2f09@10.0.0.161:30303",
     "description": "official supernode3",
     "isOfficial": true,
-    "stateInfo": {
-        "state": 1,
-        "height": 0
-    },
+    "state": 1,
     "founders": [{
       "lockID": 4,
       "addr": "0x918b8ed234e235a2ea5756fd5d9c80850ba3bb6d",
@@ -54,12 +42,6 @@
       "creator": 10,
       "partner": 40,
       "voter": 50
-    },
-    "voteInfo": {
-        "voters": [],
-        "totalAmount": 0,
-        "totalNum": 0,
-        "height": 0
     },
     "lastRewardHeight": 0,
     "createHeight": 0,
@@ -73,10 +55,7 @@
     "enode": "enode://eb7efa3c3caadc1eadcd90d77deaa97ae20be11e0f9640fe189dd88f43595cf8e3295a28bf0a3c29d76ef7e58c666a72d0b28fcb5eb50ea4a7f4010d7b22878d@10.0.0.162:30303",
     "description": "official supernode6",
     "isOfficial": true,
-    "stateInfo": {
-        "state": 1,
-        "height": 0
-    },
+    "state": 1,
     "founders": [{
       "lockID": 5,
       "addr": "0xd57574369a6c90a5622f17fbed30c891b9d70c3b",
@@ -87,12 +66,6 @@
       "creator": 10,
       "partner": 40,
       "voter": 50
-    },
-    "voteInfo": {
-        "voters": [],
-        "totalAmount": 0,
-        "totalNum": 0,
-        "height": 0
     },
     "lastRewardHeight": 0,
     "createHeight": 0,
@@ -106,10 +79,7 @@
     "enode": "enode://f687439863fce1ff70dc40bec0fe5ea1ad0833a2672c29590b0aa9001e1488013e42e8adc96a6a9312ed1426d6bea47026d057df57a5856970b207afac771f09@10.0.0.163:30303",
     "description": "official supernode9",
     "isOfficial": true,
-    "stateInfo": {
-        "state": 1,
-        "height": 0
-    },
+    "state": 1,
     "founders": [{
       "lockID": 6,
       "addr": "0x4d244c17d2a957f4a150408f8f4d19382ae8e2c8",
@@ -120,12 +90,6 @@
       "creator": 10,
       "partner": 40,
       "voter": 50
-    },
-    "voteInfo": {
-        "voters": [],
-        "totalAmount": 0,
-        "totalNum": 0,
-        "height": 0
     },
     "lastRewardHeight": 0,
     "createHeight": 0,
