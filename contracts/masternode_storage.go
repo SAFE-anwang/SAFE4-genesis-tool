@@ -102,7 +102,7 @@ func (storage *MasterNodeStorageStorage) buildAddr2Info(account *core.GenesisAcc
 		storage.calcEnode(account, masternode, &curKey)
 		storage.calcDesc(account, masternode, &curKey)
 		storage.calcIsOfficial(account, masternode, &curKey)
-		storage.calcStateInfo(account, masternode, &curKey)
+		storage.calcState(account, masternode, &curKey)
 		storage.calcFounders(account, masternode, &curKey)
 		storage.calcIncentivePlan(account, masternode, &curKey)
 	}
@@ -148,16 +148,11 @@ func (storage *MasterNodeStorageStorage) calcIsOfficial(account *core.GenesisAcc
 	account.Storage[storageKey] = storageValue
 }
 
-func (storage *MasterNodeStorageStorage) calcStateInfo(account *core.GenesisAccount, masternode types.MasterNodeInfo, curKey **big.Int) {
+func (storage *MasterNodeStorageStorage) calcState(account *core.GenesisAccount, masternode types.MasterNodeInfo, curKey **big.Int) {
 	var storageKey, storageValue common.Hash
 	// state
 	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue = utils.GetStorage4Int(*curKey, masternode.StateInfo.State)
-	account.Storage[storageKey] = storageValue
-
-	// height
-	*curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
-	storageKey, storageValue = utils.GetStorage4Int(*curKey, masternode.StateInfo.Height)
+	storageKey, storageValue = utils.GetStorage4Int(*curKey, masternode.State)
 	account.Storage[storageKey] = storageValue
 }
 

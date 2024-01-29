@@ -31,7 +31,7 @@ type MasterNodeInfo struct {
 	Enode         string                    `json:"enode"         gencodec:"required"`
 	Description   string                    `json:"description"   gencodec:"required"`
 	IsOfficial    bool                      `json:"isOfficial"    gencodec:"required"`
-	StateInfo     MasterNodeStateInfo       `json:"stateInfo"     gencodec:"required"`
+	State         *big.Int                  `json:"state"         gencodec:"required"`
 	Founders      []MasterNodeMemberInfo    `json:"founders"      gencodec:"required"`
 	IncentivePlan MasterNodeIncentivePlan   `json:"incentivePlan" gencodec:"required"`
 	LastRewardHeight  *big.Int              `json:"lastRewardHeight" gencodec:"required"`
