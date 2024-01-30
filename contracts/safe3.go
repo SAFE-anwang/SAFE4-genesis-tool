@@ -73,7 +73,7 @@ func (storage *Safe3Storage) Generate(alloc *core.GenesisAlloc) {
 	}
 	os.RemoveAll(storage.workPath + "temp")
 
-	fileName := storage.workPath + "safe3storage" + string(filepath.Separator) + "storage_list.go"
+	fileName := storage.workPath + utils.GetSafe3StorageDir() + string(filepath.Separator) + "storage_list.go"
 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
@@ -605,12 +605,12 @@ func (storage *Safe3Storage) calcAmount3(account *core.GenesisAccount, amount *b
 }
 
 func (storage *Safe3Storage) save() {
-	os.Mkdir(storage.workPath + "safe3storage", 0755)
+	os.Mkdir(storage.workPath + utils.GetSafe3StorageDir(), 0755)
 
 	fileIndex++
 	temp := "storage" + strconv.Itoa(fileIndex)
 	varName := "Storage" + strconv.Itoa(fileIndex)
-	filePath := storage.workPath + "safe3storage" + string(filepath.Separator) + temp + ".go"
+	filePath := storage.workPath + utils.GetSafe3StorageDir() + string(filepath.Separator) + temp + ".go"
 	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)

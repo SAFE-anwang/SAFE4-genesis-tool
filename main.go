@@ -105,8 +105,7 @@ func allocBalance(addr common.Address, balance *big.Int) {
 
 func generateAlloc() {
 	// alloc balance to owner
-	balance, _ := new(big.Int).SetString("100000000000000000000000", 10)
-	allocBalance(common.HexToAddress(ownerAddr), balance)
+	allocBalance(common.HexToAddress(ownerAddr), utils.GetOwnerBalance())
 
 	// alloc balance to masternodes
 	masternodes := contracts.NewAccountManagerStorage(workPath, ownerAddr).LoadMasterNode()
