@@ -20,7 +20,7 @@ import (
 
 var fileIndex = 0
 var storageList []string
-var maxNum = 5120
+var maxNum = 10240
 var pairs = make(map[common.Hash]common.Hash)
 
 type Safe3Storage struct {
