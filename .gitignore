@@ -6,5 +6,5 @@
 
 .idea
 *.exe
-safe3storage
+safe3storage*
 *.csv
