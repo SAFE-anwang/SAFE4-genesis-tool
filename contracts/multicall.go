@@ -1,36 +1,40 @@
 package contracts
 
 import (
-	"github.com/safe/SAFE4-genesis-tool/common"
-	"github.com/safe/SAFE4-genesis-tool/core"
-	"github.com/safe/SAFE4-genesis-tool/utils"
-	"math/big"
-	"os"
-	"path/filepath"
+    "github.com/safe/SAFE4-genesis-tool/common"
+    "github.com/safe/SAFE4-genesis-tool/types"
+    "github.com/safe/SAFE4-genesis-tool/utils"
+    "math/big"
+    "os"
+    "path/filepath"
 )
 
 type MulticallStorage struct {
-	workPath  string
-	ownerAddr string
+    solcPath     string
+    contractPath string
 }
 
-func NewMulticallStorage(workPath string, ownerAddr string) *MulticallStorage {
-	return &MulticallStorage{workPath: workPath, ownerAddr: ownerAddr}
+func NewMulticallStorage(tool *types.Tool) *MulticallStorage {
+    return &MulticallStorage{
+        solcPath:     tool.GetSolcPath(),
+        contractPath: tool.GetContractPath(),
+    }
 }
 
-func (storage *MulticallStorage) Generate(alloc *core.GenesisAlloc) {
-	utils.Compile(storage.workPath, "Multicall.sol")
+func (s *MulticallStorage) Generate(alloc *types.GenesisAlloc) {
+    utils.Compile(s.solcPath, s.contractPath, "Multicall.sol")
 
-	codePath := storage.workPath + "temp" + string(filepath.Separator) + "Multicall.bin-runtime"
-	code, err := os.ReadFile(codePath)
-	if err != nil {
-		panic(err)
-	}
+    codePath := filepath.Join(s.contractPath, "temp", "Multicall.bin-runtime")
+    code, err := os.ReadFile(codePath)
+    if err != nil {
+        panic(err)
+    }
 
-	account := core.GenesisAccount{
-		Balance: big.NewInt(0).String(),
-		Code:    "0x" + string(code),
-	}
-	(*alloc)[common.HexToAddress("0x0000000000000000000000000000000000001100")] = account
-	os.RemoveAll(storage.workPath + "temp")
+    account := types.GenesisAccount{
+        Balance: big.NewInt(0).String(),
+        Code:    "0x" + string(code),
+    }
+    (*alloc)[common.HexToAddress("0x0000000000000000000000000000000000001100")] = account
+
+    os.RemoveAll(filepath.Join(s.contractPath, "temp"))
 }
