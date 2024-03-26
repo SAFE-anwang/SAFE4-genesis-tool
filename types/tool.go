@@ -35,6 +35,16 @@ func NewTool() (*Tool, error) {
     }, err
 }
 
+func (t *Tool) GetChainID() *big.Int {
+    if t.netType == 0 {
+        return big.NewInt(6666665)
+    } else if t.netType == 1 {
+        return big.NewInt(6666666)
+    } else {
+        return big.NewInt(6666667)
+    }
+}
+
 func (t *Tool) GetOwnerAddress() string {
     if t.netType == 0 {
         return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
@@ -130,7 +140,7 @@ func (t *Tool) GetGenesisAlloc() *GenesisAlloc {
 
 func (t *Tool) GenerateBase() {
     t.genesis.Config = &params.ChainConfig{
-        ChainID:             big.NewInt(6666666),
+        ChainID:             t.GetChainID(),
         HomesteadBlock:      big.NewInt(0),
         EIP150Block:         big.NewInt(0),
         EIP150Hash:          common.Hash{},
