@@ -96,11 +96,11 @@ func (t *Tool) GetGenesisPath() string {
 
 func (t *Tool) GetSafe3StoragePath() string {
     if t.netType == 0 {
-        return filepath.Join(t.workPath, "safe3", "safe3storage_mainnet")
+        return filepath.Join(t.workPath, "mainnet", "safe3", "safe3storage_mainnet")
     } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "safe3", "safe3storage_testnet")
+        return filepath.Join(t.workPath, "testnet", "safe3", "safe3storage_testnet")
     } else {
-        return filepath.Join(t.workPath, "safe3", "safe3storage_devnet")
+        return filepath.Join(t.workPath, "devnet", "safe3", "safe3storage_devnet")
     }
 }
 
