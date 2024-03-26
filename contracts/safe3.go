@@ -86,6 +86,7 @@ func (s *Safe3Storage) Generate(alloc *types.GenesisAlloc) {
     os.RemoveAll(filepath.Join(s.contractPath, "temp"))
 
     if s.isStorage {
+        os.MkdirAll(s.storagePath, 0755)
         fileName := filepath.Join(s.storagePath, "storage_list.go")
         f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
         if err != nil {
