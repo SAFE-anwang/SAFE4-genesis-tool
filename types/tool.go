@@ -106,21 +106,21 @@ func (t *Tool) GetSafe3StoragePath() string {
 
 func (t *Tool) GetABI4GoPath() string {
     if t.netType == 0 {
-        return filepath.Join(t.workPath, "mainnet", "genesis_abi.go")
+        return filepath.Join(t.workPath, "mainnet", "contract_abi.go")
     } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "testnet", "genesis_abi.go")
+        return filepath.Join(t.workPath, "testnet", "contract_abi.go")
     } else {
-        return filepath.Join(t.workPath, "devnet", "genesis_abi.go")
+        return filepath.Join(t.workPath, "devnet", "contract_abi.go")
     }
 }
 
 func (t *Tool) GetABI4JsPath() string {
     if t.netType == 0 {
-        return filepath.Join(t.workPath, "mainnet", "genesis_abi.ts")
+        return filepath.Join(t.workPath, "mainnet", "contract_abi.ts")
     } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "testnet", "genesis_abi.ts")
+        return filepath.Join(t.workPath, "testnet", "contract_abi.ts")
     } else {
-        return filepath.Join(t.workPath, "devnet", "genesis_abi.ts")
+        return filepath.Join(t.workPath, "devnet", "contract_abi.ts")
     }
 }
 
