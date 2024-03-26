@@ -211,7 +211,7 @@ func (t *Tool) SaveABI() {
             panic(err)
         }
         abis = append(abis, string(content))
-        os.RemoveAll(contractPath + "temp")
+        os.RemoveAll(filepath.Join(contractPath, "temp"))
     }
     temp := "package systemcontracts"
     for i, fileName := range contractNames {
