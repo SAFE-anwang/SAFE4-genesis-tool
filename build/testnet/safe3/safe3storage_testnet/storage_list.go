@@ -1,4 +1,4 @@
-package safe3storage
+package safe3storage_testnet
 
 var StorageList = []string {
     Storage1,
