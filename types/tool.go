@@ -134,6 +134,16 @@ func (t *Tool) GetABI4JsPath() string {
     }
 }
 
+func (t *Tool) GetABI4SwiftPath() string {
+    if t.netType == 0 {
+        return filepath.Join(t.workPath, "mainnet", "Safe4ContractInfo.swift")
+    } else if t.netType == 1 {
+        return filepath.Join(t.workPath, "testnet", "Safe4ContractInfo.swift")
+    } else {
+        return filepath.Join(t.workPath, "devnet", "Safe4ContractInfo.swift")
+    }
+}
+
 func (t *Tool) GetGenesisAlloc() *GenesisAlloc {
     return &t.genesis.Alloc
 }
@@ -208,6 +218,7 @@ func (t *Tool) SaveGenesis() {
 func (t *Tool) SaveABI() {
     os.MkdirAll(filepath.Dir(t.GetABI4GoPath()), 0755)
     os.MkdirAll(filepath.Dir(t.GetABI4JsPath()), 0755)
+    os.MkdirAll(filepath.Dir(t.GetABI4SwiftPath()), 0755)
 
     contractNames := []string{"Property", "AccountManager", "MasterNodeStorage", "MasterNodeLogic", "SuperNodeStorage", "SuperNodeLogic", "SNVote", "MasterNodeState", "SuperNodeState", "Proposal", "SystemReward", "Safe3", "Multicall"}
     var abis []string
@@ -228,7 +239,6 @@ func (t *Tool) SaveABI() {
         str, _ := json.Marshal(abis[i])
         temp += fmt.Sprintf("\n\nconst %sABI = %s", fileName, str)
     }
-
     ioutil.WriteFile(t.GetABI4GoPath(), []byte(temp), 0644)
 
     temp = ""
@@ -241,6 +251,28 @@ func (t *Tool) SaveABI() {
     }
     temp = strings.Replace(temp, "\\", "", -1)
     ioutil.WriteFile(t.GetABI4JsPath(), []byte(temp), 0644)
+
+    temp = "public class Safe4ContractABI {"
+    for i, fileName := range contractNames {
+        if fileName == "MasterNodeState" || fileName == "SuperNodeState" || fileName == "SystemReward" || fileName == "Multicall" {
+            continue
+        }
+        str, _ := json.Marshal(abis[i])
+        temp += fmt.Sprintf("\n    public static var %sABI: String = %s", fileName, str)
+    }
+    temp += "\n}"
+    temp += "\n\npublic class Safe4ContractAddress {\n" +
+        "    public static var PropertyContractAddr: String = \"0x0000000000000000000000000000000000001000\"\n" +
+        "    public static var AccountManagerContractAddr: String = \"0x0000000000000000000000000000000000001010\"\n" +
+        "    public static var MasterNodeStorageContractAddr: String = \"0x0000000000000000000000000000000000001020\"\n" +
+        "    public static var MasterNodeLogicContractAddr: String = \"0x0000000000000000000000000000000000001025\"\n" +
+        "    public static var SuperNodeStorageContractAddr: String = \"0x0000000000000000000000000000000000001030\"\n" +
+        "    public static var SuperNodeLogicContractAddr: String = \"0x0000000000000000000000000000000000001035\"\n" +
+        "    public static var SNVoteContractAddr: String = \"0x0000000000000000000000000000000000001040\"\n" +
+        "    public static var ProposalContractAddr: String = \"0x0000000000000000000000000000000000001070\"\n" +
+        "    public static var Safe3ContractAddr: String = \"0x0000000000000000000000000000000000001090\"\n" +
+        "}\n"
+    ioutil.WriteFile(t.GetABI4SwiftPath(), []byte(temp), 0644)
 }
 
 func (t *Tool) loadMasterNode() *[]MasterNodeInfo {
