@@ -24,6 +24,12 @@ var storageList []string
 var maxNum = 10240
 var pairs = make(map[common.Hash]common.Hash)
 
+//var MIN_COIN = big.NewInt(99999999) // 1 safe
+var MIN_COIN = big.NewInt(9999999) // 0.1 safe
+//var MIN_COIN = big.NewInt(999999) // 0.01 safe
+//var MIN_COIN = big.NewInt(99999) // 0.001 safe
+//var MIN_COIN = common.Big0
+
 type Safe3Storage struct {
     dataPath     string
     solcPath     string
@@ -143,10 +149,6 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         panic(err)
     }
 
-    CHANGE_COIN := big.NewInt(10000000000)
-    //MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
-    MIN_COIN := common.Big0
-
     availableAmounts := make(map[string]*big.Int)
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
@@ -159,7 +161,6 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         addr := temps[1]
 
         amount, _ := new(big.Int).SetString(temps[2], 10)
-        amount.Mul(amount, CHANGE_COIN)
         if amount.Cmp(MIN_COIN) <= 0 {
             continue
         }
@@ -169,7 +170,6 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         }
 
         lockedAmount, _ := new(big.Int).SetString(temps[3], 10)
-        lockedAmount.Mul(lockedAmount, CHANGE_COIN)
         if lockedAmounts[addr] != nil && lockedAmount.Cmp(lockedAmounts[addr]) <= 0 {
             lockedAmount = lockedAmounts[addr]
         }
@@ -236,10 +236,6 @@ func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.In
     }
     defer file.Close()
 
-    CHANGE_COIN := big.NewInt(10000000000)
-    //MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
-    MIN_COIN := common.Big0
-
     specialAmounts := make(map[string]*big.Int)
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
@@ -251,7 +247,6 @@ func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.In
         }
         addr := temps[1]
         amount, _ := new(big.Int).SetString(temps[2], 10)
-        amount.Mul(amount, CHANGE_COIN)
         if amount.Cmp(MIN_COIN) <= 0 {
             continue
         }
@@ -294,9 +289,7 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
     lockedAmounts := make(map[string]*big.Int)
     lockedNum := int64(0)
 
-    ETH_COIN := new(big.Float).SetInt(big.NewInt(1000000000000000000))
-    //MIN_COIN := big.NewInt(100000000000000000 - 1) // 0.1 safe
-    MIN_COIN := common.Big0
+    BTC_COIN := new(big.Float).SetInt(big.NewInt(100000000))
     SAFE3_END_HEIGHT := big.NewInt(5000000)
     SPOS_HEIGHT := big.NewInt(1092826)
 
@@ -312,8 +305,11 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
         n, _ := big.NewInt(0).SetString(temps[0][100:], 10)
         addr := temps[2]
         amt, _ := new(big.Float).SetString(temps[4])
-        amt.Mul(amt, ETH_COIN)
+        amt.Mul(amt, BTC_COIN)
         amount, _ := amt.Int(nil)
+        if amount.Cmp(MIN_COIN) <= 0 {
+            continue
+        }
         lockHeight, _ := new(big.Int).SetString(temps[5], 10)
         unlockHeight, _ := new(big.Int).SetString(temps[6], 10)
         lockDay := big.NewInt(0)
@@ -422,22 +418,11 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
             curKey = big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
             curKey.Sub(curKey, common.Big1)
             for _, info := range list {
-                // txid
-                curKey.Add(curKey, common.Big1)
-                storageKey, storageValue = utils.GetStorage4Bytes32(curKey, info.Txid)
-                pairs[storageKey] = storageValue
-                if len(pairs) >= maxNum {
-                    s.save()
-                }
-
-                // others
+                // amount(8) + remainLockHeight(4) + lockDay(2) + isMn(1) + redeemHeight(4)
                 curKey.Add(curKey, common.Big1)
                 storageKey = common.BigToHash(curKey)
-                nStorageValue := common.BigToHash(info.N)                               // n: 2 bytes
-                amountStorageValue := common.BigToHash(info.Amount)                     // amount: 12 bytes
-                lockHeightStorageValue := common.BigToHash(info.LockHeight)             // lockHeight: 3 bytes
-                unlockHeightStorageValue := common.BigToHash(info.UnlockHeight)         // unlockHeight: 3 bytes
-                remainLockHeightStorageValue := common.BigToHash(info.RemainLockHeight) // remainLockHeight: 3 bytes
+                amountStorageValue := common.BigToHash(info.Amount)                     // amount: 8 bytes
+                remainLockHeightStorageValue := common.BigToHash(info.RemainLockHeight) // remainLockHeight: 4 bytes
                 lockDayStorageValue := common.BigToHash(info.LockDay)                   // lockDay: 2 bytes
                 isMNStorageValue := common.Hash{}                                       // isMN: 1 bytes
                 if info.IsMN {
@@ -448,26 +433,14 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
 
                 storageValue = common.Hash{}
                 offset := 0
-                for i := 0; i < 2; i++ {
-                    storageValue[31-i-offset] = nStorageValue[31-i]
-                }
-                offset += 2
-                for i := 0; i < 12; i++ {
+                for i := 0; i < 8; i++ {
                     storageValue[31-i-offset] = amountStorageValue[31-i]
                 }
-                offset += 12
-                for i := 0; i < 3; i++ {
-                    storageValue[31-i-offset] = lockHeightStorageValue[31-i]
-                }
-                offset += 3
-                for i := 0; i < 3; i++ {
-                    storageValue[31-i-offset] = unlockHeightStorageValue[31-i]
-                }
-                offset += 3
-                for i := 0; i < 3; i++ {
+                offset += 8
+                for i := 0; i < 4; i++ {
                     storageValue[31-i-offset] = remainLockHeightStorageValue[31-i]
                 }
-                offset += 3
+                offset += 4
                 for i := 0; i < 2; i++ {
                     storageValue[31-i-offset] = lockDayStorageValue[31-i]
                 }
