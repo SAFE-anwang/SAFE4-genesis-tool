@@ -184,18 +184,6 @@ func (t *Tool) setBalance(addr common.Address, balance *big.Int) {
 func (t *Tool) AllocBalance() {
     // alloc balance to owner
     t.setBalance(common.HexToAddress(t.GetOwnerAddress()), t.GetOwnerBalance())
-
-    // alloc balance to masternodes
-    masternodes := t.loadMasterNode()
-    for _, masternode := range *masternodes {
-        t.setBalance(masternode.Addr, masternode.Amount)
-    }
-
-    // alloc balance to supernodese
-    supernodes := t.loadSuperNode()
-    for _, supernode := range *supernodes {
-        t.setBalance(supernode.Addr, supernode.Amount)
-    }
 }
 
 func (t *Tool) SaveGenesis() {
