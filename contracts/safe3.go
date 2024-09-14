@@ -73,7 +73,7 @@ func (s *Safe3Storage) Generate(alloc *types.GenesisAlloc) {
             Code:    "0x" + string(code),
         }
         if contractNames[i] == "TransparentUpgradeableProxy" {
-            account.Balance = totalAmount.String()
+            account.Balance = totalAmount.Mul(totalAmount, big.NewInt(10000000000)).String()
             account.Storage = make(map[common.Hash]common.Hash)
             account.Storage[common.BigToHash(big.NewInt(0))] = common.BigToHash(big.NewInt(1))
             account.Storage[common.BigToHash(big.NewInt(0x33))] = common.HexToHash(s.ownerAddr)
