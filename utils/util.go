@@ -6,9 +6,6 @@ import (
 
 func GetNetType() int {
     for _, v := range os.Args {
-        if v == "-devnet" {
-            return 2
-        }
         if v == "-testnet" {
             return 1
         }

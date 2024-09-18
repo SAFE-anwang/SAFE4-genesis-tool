@@ -73,20 +73,16 @@ func (t *Tool) GetWorkPath() string {
 func (t *Tool) GetDataPath() string {
     if t.netType == 0 {
         return filepath.Join(t.depPath, "data", "mainnet")
-    } else if t.netType == 1 {
-        return filepath.Join(t.depPath, "data", "testnet")
     } else {
-        return filepath.Join(t.depPath, "data", "devnet")
+        return filepath.Join(t.depPath, "data", "testnet")
     }
 }
 
 func (t *Tool) GetContractPath() string {
     if t.netType == 0 {
         return filepath.Join(t.depPath, "SAFE4-system-contract")
-    } else if t.netType == 1 {
-        return filepath.Join(t.depPath, "SAFE4-system-contract-testnet")
     } else {
-        return filepath.Join(t.depPath, "SAFE4-system-contract-devnet")
+        return filepath.Join(t.depPath, "SAFE4-system-contract-testnet")
     }
 }
 
@@ -97,50 +93,40 @@ func (t *Tool) GetSolcPath() string {
 func (t *Tool) GetGenesisPath() string {
     if t.netType == 0 {
         return filepath.Join(t.workPath, "mainnet", "genesis.json")
-    } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "testnet", "genesis.json")
     } else {
-        return filepath.Join(t.workPath, "devnet", "genesis.json")
+        return filepath.Join(t.workPath, "testnet", "genesis.json")
     }
 }
 
 func (t *Tool) GetSafe3StoragePath() string {
     if t.netType == 0 {
         return filepath.Join(t.workPath, "mainnet", "safe3", "safe3storage_mainnet")
-    } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "testnet", "safe3", "safe3storage_testnet")
     } else {
-        return filepath.Join(t.workPath, "devnet", "safe3", "safe3storage_devnet")
+        return filepath.Join(t.workPath, "testnet", "safe3", "safe3storage_testnet")
     }
 }
 
 func (t *Tool) GetABI4GoPath() string {
     if t.netType == 0 {
         return filepath.Join(t.workPath, "mainnet", "contract_abi.go")
-    } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "testnet", "contract_abi.go")
     } else {
-        return filepath.Join(t.workPath, "devnet", "contract_abi.go")
+        return filepath.Join(t.workPath, "testnet", "contract_abi.go")
     }
 }
 
 func (t *Tool) GetABI4JsPath() string {
     if t.netType == 0 {
         return filepath.Join(t.workPath, "mainnet", "contract_abi.ts")
-    } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "testnet", "contract_abi.ts")
     } else {
-        return filepath.Join(t.workPath, "devnet", "contract_abi.ts")
+        return filepath.Join(t.workPath, "testnet", "contract_abi.ts")
     }
 }
 
 func (t *Tool) GetABI4SwiftPath() string {
     if t.netType == 0 {
         return filepath.Join(t.workPath, "mainnet", "Safe4ContractInfo.swift")
-    } else if t.netType == 1 {
-        return filepath.Join(t.workPath, "testnet", "Safe4ContractInfo.swift")
     } else {
-        return filepath.Join(t.workPath, "devnet", "Safe4ContractInfo.swift")
+        return filepath.Join(t.workPath, "testnet", "Safe4ContractInfo.swift")
     }
 }
 
