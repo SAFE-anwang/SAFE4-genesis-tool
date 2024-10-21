@@ -9,7 +9,7 @@
     "state": 1,
     "founders": [{
       "lockID": 1,
-      "addr": "0x4869d7346f406330d4d3c9c92e61e37475c6f360",
+      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -32,7 +32,7 @@
     "state": 1,
     "founders": [{
       "lockID": 2,
-      "addr": "0xe8abb53920be391ec198a934e71f588793ac9119",
+      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -55,7 +55,7 @@
     "state": 1,
     "founders": [{
       "lockID": 3,
-      "addr": "0x34abeac391a2c537469ac0e5563ea06266cad7b5",
+      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -78,7 +78,7 @@
     "state": 1,
     "founders": [{
       "lockID": 4,
-      "addr": "0xdb1d201ed2ceb9f57474bc640df78cbda8d0a66e",
+      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -101,7 +101,7 @@
     "state": 1,
     "founders": [{
       "lockID": 5,
-      "addr": "0xea2511e798417abcc507a8d081a93de30328ce71",
+      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -124,7 +124,7 @@
     "state": 1,
     "founders": [{
       "lockID": 6,
-      "addr": "0xc77738a8cb42d86037e76c15e0d02b742d4bec6c",
+      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
       "amount": 1000000000000000000000,
       "height": 0
     }],
