@@ -1,15 +1,15 @@
 [{
     "id": 1,
-    "addr": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
-    "creator": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
+    "addr": "0x4869d7346f406330d4d3c9c92e61e37475c6f360",
+    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
     "amount": 1000000000000000000000,
-    "enode": "enode://7d9cd0f84db59f040755bb7475fddd5190521db7373e6a3d8bf35b95727851821ab7e8dcb1ad3ea89f6a7d5d2e82e052b23a2a53ea5a9a86d708c7a02d2913c8@10.0.0.202:30303",
+    "enode": "enode://250e0c4bbb385bc5cc7e003f8bfb6aa6d9c081f9d01fe95fadff5b3aff1eac764629779475ab8d3b4485d4dd1479974c777494ef5947bf3f5c01155831fdf417@192.46.217.199:30303",
     "description": "official masternode1",
     "isOfficial": true,
     "state": 1,
     "founders": [{
       "lockID": 1,
-      "addr": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
+      "addr": "0x4869d7346f406330d4d3c9c92e61e37475c6f360",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -23,16 +23,108 @@
     "updateHeight": 0
 },{
     "id": 2,
-    "addr": "0x43d0faa7f14407137796a89bb5cf3ce2236943c2",
-    "creator": "0x43d0faa7f14407137796a89bb5cf3ce2236943c2",
+    "addr": "0xe8abb53920be391ec198a934e71f588793ac9119",
+    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
     "amount": 1000000000000000000000,
-    "enode": "enode://a7470f55fa1921b401eb66503d87857cb0840a65407c41016f10557ccd6bdf454bc38fa17629fd19ce66ca89445a92516b3f3f33ff7fed3f9ebdbdd2bb261358@10.0.0.164:30303",
+    "enode": "enode://cf39d2669369a9c1a0014f0da21d726bcfa2ba9bdf638141e4573800c71295183d1e77f412f42cacecc0a06f35b5d10ce370dead9efbe65a2a382e5aebbc6bd0@45.79.122.221:30303",
     "description": "official masternode2",
     "isOfficial": true,
     "state": 1,
     "founders": [{
       "lockID": 2,
-      "addr": "0x43d0faa7f14407137796a89bb5cf3ce2236943c2",
+      "addr": "0xe8abb53920be391ec198a934e71f588793ac9119",
+      "amount": 1000000000000000000000,
+      "height": 0
+    }],
+    "incentivePlan": {
+      "creator": 100,
+      "partner": 0,
+      "voter": 0
+    },
+    "lastRewardHeight": 0,
+    "createHeight": 0,
+    "updateHeight": 0
+},{
+    "id": 3,
+    "addr": "0x34abeac391a2c537469ac0e5563ea06266cad7b5",
+    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "amount": 1000000000000000000000,
+    "enode": "enode://04cf02a2be072d79240c99f9fdb13987eae366e0084d24b87ce73830237b5c74517097b2a06fafc8cdab3d1f12f0bcdcdb69673e3eb39f9a2a76fc80add7b41a@194.195.120.218:30303",
+    "description": "official masternode3",
+    "isOfficial": true,
+    "state": 1,
+    "founders": [{
+      "lockID": 3,
+      "addr": "0x34abeac391a2c537469ac0e5563ea06266cad7b5",
+      "amount": 1000000000000000000000,
+      "height": 0
+    }],
+    "incentivePlan": {
+      "creator": 100,
+      "partner": 0,
+      "voter": 0
+    },
+    "lastRewardHeight": 0,
+    "createHeight": 0,
+    "updateHeight": 0
+},{
+    "id": 4,
+    "addr": "0xdb1d201ed2ceb9f57474bc640df78cbda8d0a66e",
+    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "amount": 1000000000000000000000,
+    "enode": "enode://231965ea97f7ec03eb53080ceb3e23f3fa2ba8401f1152f7e42345d66b43db6ed0a86d831fb42ce2a01240f98ef2dcadf4306c4b5e87903966f65e6394f191a8@172.104.53.213:30303",
+    "description": "official masternode4",
+    "isOfficial": true,
+    "state": 1,
+    "founders": [{
+      "lockID": 4,
+      "addr": "0xdb1d201ed2ceb9f57474bc640df78cbda8d0a66e",
+      "amount": 1000000000000000000000,
+      "height": 0
+    }],
+    "incentivePlan": {
+      "creator": 100,
+      "partner": 0,
+      "voter": 0
+    },
+    "lastRewardHeight": 0,
+    "createHeight": 0,
+    "updateHeight": 0
+},{
+    "id": 5,
+    "addr": "0xea2511e798417abcc507a8d081a93de30328ce71",
+    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "amount": 1000000000000000000000,
+    "enode": "enode://ee3d0eae18c19901fdb3b333761302d5120498ae416d7be39831e7a2908848acd08ed97576bb03b3ce484381213dba527d5fbca08fbc875e2be0a971cb2d4d3c@139.162.98.168:30303",
+    "description": "official masternode5",
+    "isOfficial": true,
+    "state": 1,
+    "founders": [{
+      "lockID": 5,
+      "addr": "0xea2511e798417abcc507a8d081a93de30328ce71",
+      "amount": 1000000000000000000000,
+      "height": 0
+    }],
+    "incentivePlan": {
+      "creator": 100,
+      "partner": 0,
+      "voter": 0
+    },
+    "lastRewardHeight": 0,
+    "createHeight": 0,
+    "updateHeight": 0
+},{
+    "id": 6,
+    "addr": "0xc77738a8cb42d86037e76c15e0d02b742d4bec6c",
+    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "amount": 1000000000000000000000,
+    "enode": "enode://9d1712e33c9b8597db6a50e6b297def0f8b1cd6c14cc7fbe1c165c2193baac08f467383d2fb98a85646333a498021de56bb313a84e82f30cb14da40b958dabd7@172.104.85.174:30303",
+    "description": "official masternode6",
+    "isOfficial": true,
+    "state": 1,
+    "founders": [{
+      "lockID": 6,
+      "addr": "0xc77738a8cb42d86037e76c15e0d02b742d4bec6c",
       "amount": 1000000000000000000000,
       "height": 0
     }],
