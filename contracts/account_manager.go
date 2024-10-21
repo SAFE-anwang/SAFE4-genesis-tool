@@ -37,14 +37,14 @@ func (s *AccountManagerStorage) Generate(alloc *types.GenesisAlloc) {
     var addrs []common.Address
     var amounts []*big.Int
     for _, masternode := range *masternodes {
-        totalAmount = totalAmount.Add(totalAmount, masternode.Amount)
-        addrs = append(addrs, masternode.Addr)
-        amounts = append(amounts, masternode.Amount)
+        totalAmount = totalAmount.Add(totalAmount, masternode.Founders[0].Amount)
+        addrs = append(addrs, masternode.Founders[0].Addr)
+        amounts = append(amounts, masternode.Founders[0].Amount)
     }
     for _, supernode := range *supernodes {
-        totalAmount = totalAmount.Add(totalAmount, supernode.Amount)
-        addrs = append(addrs, supernode.Addr)
-        amounts = append(amounts, supernode.Amount)
+        totalAmount = totalAmount.Add(totalAmount, supernode.Founders[0].Amount)
+        addrs = append(addrs, supernode.Founders[0].Addr)
+        amounts = append(amounts, supernode.Founders[0].Amount)
     }
 
     contractNames := [2]string{"TransparentUpgradeableProxy", "AccountManager"}
