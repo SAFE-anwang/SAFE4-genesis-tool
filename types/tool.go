@@ -52,11 +52,11 @@ func (t *Tool) GetOwnerAddress() string {
 }
 
 func (t *Tool) GetOwnerBalance() *big.Int {
-    balance, _ := new(big.Int).SetString("100000000000000000000000", 10)
+    balance, _ := new(big.Int).SetString("100000000000000000000", 10)
     if t.netType == 0 {
         return balance
     } else {
-        return big.NewInt(1).Mul(balance, big.NewInt(10000000))
+        return big.NewInt(1).Mul(balance, big.NewInt(10000000000))
     }
 }
 
@@ -164,6 +164,11 @@ func (t *Tool) setBalance(addr common.Address, balance *big.Int) {
 func (t *Tool) AllocBalance() {
     // alloc balance to owner
     t.setBalance(common.HexToAddress(t.GetOwnerAddress()), t.GetOwnerBalance())
+    // alloc balance to supernodes
+    sns := t.loadSuperNode()
+    for _, sn := range *sns {
+        t.setBalance(sn.Addr, big.NewInt(100000000000000000)) // alloc sn 0.1 for upload-node-state
+    }
 }
 
 func (t *Tool) SaveGenesis() {
