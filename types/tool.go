@@ -72,6 +72,10 @@ func (t *Tool) GetDataPath() string {
     }
 }
 
+func (t *Tool) GetSafe3DataPath() string {
+    return filepath.Join(t.depPath, "data", "safe3")
+}
+
 func (t *Tool) GetContractPath() string {
     if t.netType == 0 {
         return filepath.Join(t.depPath, "SAFE4-system-contract")
@@ -93,11 +97,7 @@ func (t *Tool) GetGenesisPath() string {
 }
 
 func (t *Tool) GetSafe3StoragePath() string {
-    if t.netType == 0 {
-        return filepath.Join(t.workPath, "mainnet", "safe3", "safe3storage_mainnet")
-    } else {
-        return filepath.Join(t.workPath, "testnet", "safe3", "safe3storage_testnet")
-    }
+    return filepath.Join(t.workPath, "safe3", "safe3storage")
 }
 
 func (t *Tool) GetABI4GoPath() string {

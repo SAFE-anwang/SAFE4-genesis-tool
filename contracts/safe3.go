@@ -41,7 +41,7 @@ type Safe3Storage struct {
 
 func NewSafe3Storage(tool *types.Tool) *Safe3Storage {
     return &Safe3Storage{
-        dataPath:     tool.GetDataPath(),
+        dataPath:     tool.GetSafe3DataPath(),
         solcPath:     tool.GetSolcPath(),
         contractPath: tool.GetContractPath(),
         storagePath:  tool.GetSafe3StoragePath(),
