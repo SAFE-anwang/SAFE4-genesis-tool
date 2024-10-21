@@ -38,20 +38,16 @@ func NewTool() (*Tool, error) {
 func (t *Tool) GetChainID() *big.Int {
     if t.netType == 0 {
         return big.NewInt(6666665)
-    } else if t.netType == 1 {
-        return big.NewInt(6666666)
     } else {
-        return big.NewInt(6666667)
+        return big.NewInt(6666666)
     }
 }
 
 func (t *Tool) GetOwnerAddress() string {
     if t.netType == 0 {
         return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
-    } else if t.netType == 1 {
-        return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
     } else {
-        return "0x80d8b8f308770ce14252173abb00075cc9082d03"
+        return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
     }
 }
 
@@ -59,8 +55,6 @@ func (t *Tool) GetOwnerBalance() *big.Int {
     balance, _ := new(big.Int).SetString("100000000000000000000000", 10)
     if t.netType == 0 {
         return balance
-    } else if t.netType == 1 {
-        return big.NewInt(1).Mul(balance, big.NewInt(10000000))
     } else {
         return big.NewInt(1).Mul(balance, big.NewInt(10000000))
     }
