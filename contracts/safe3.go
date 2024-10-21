@@ -143,9 +143,9 @@ func (s *Safe3Storage) unzip(zipPath string) {
 }
 
 func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmounts map[string]*big.Int, totalAmount *big.Int) map[string]*big.Int {
-    os.Remove(filepath.Join(s.dataPath, "safe3", "balanceaddresses.csv"))
-    s.unzip(filepath.Join(s.dataPath, "safe3", "balanceaddresses.zip"))
-    file, err := os.Open(filepath.Join(s.dataPath, "safe3", "balanceaddresses.csv"))
+    os.Remove(filepath.Join(s.dataPath, "balanceaddresses.csv"))
+    s.unzip(filepath.Join(s.dataPath, "balanceaddresses.zip"))
+    file, err := os.Open(filepath.Join(s.dataPath, "balanceaddresses.csv"))
     if err != nil {
         panic(err)
     }
@@ -184,7 +184,7 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
     }
 
     file.Close()
-    os.Remove(filepath.Join(s.dataPath, "safe3", "balanceaddresses.csv"))
+    os.Remove(filepath.Join(s.dataPath, "balanceaddresses.csv"))
 
     if s.isStorage {
         // split availables
@@ -231,7 +231,7 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
 }
 
 func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.Int {
-    file, err := os.Open(filepath.Join(s.dataPath, "safe3", "specialaddress.csv"))
+    file, err := os.Open(filepath.Join(s.dataPath, "specialaddress.csv"))
     if err != nil {
         panic(err)
     }
@@ -258,7 +258,7 @@ func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.In
 }
 
 func (s *Safe3Storage) loadMNs() map[string]string {
-    jsonFile, err := os.Open(filepath.Join(s.dataPath, "safe3", "masternodes.csv"))
+    jsonFile, err := os.Open(filepath.Join(s.dataPath, "masternodes.csv"))
     if err != nil {
         panic(err)
     }
@@ -288,9 +288,9 @@ func calcDay(start int, end int, blockInDay int) int {
 func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int {
     masternodes := s.loadMNs()
 
-    os.Remove(filepath.Join(s.dataPath, "safe3", "lockedaddresses.csv"))
-    s.unzip(filepath.Join(s.dataPath, "safe3", "lockedaddresses.zip"))
-    file, err := os.Open(filepath.Join(s.dataPath, "safe3", "lockedaddresses.csv"))
+    os.Remove(filepath.Join(s.dataPath, "lockedaddresses.csv"))
+    s.unzip(filepath.Join(s.dataPath, "lockedaddresses.zip"))
+    file, err := os.Open(filepath.Join(s.dataPath, "lockedaddresses.csv"))
     if err != nil {
         panic(err)
     }
@@ -368,7 +368,7 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
     }
 
     file.Close()
-    os.Remove(filepath.Join(s.dataPath, "safe3", "lockedaddresses.csv"))
+    os.Remove(filepath.Join(s.dataPath, "lockedaddresses.csv"))
 
     if s.isStorage {
         // split locks
