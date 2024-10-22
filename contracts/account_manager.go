@@ -34,17 +34,31 @@ func (s *AccountManagerStorage) Generate(alloc *types.GenesisAlloc) {
     supernodes := s.loadSuperNode()
 
     totalAmount := big.NewInt(0)
+    addr2amounts := make(map[common.Address][]*big.Int)
+    addr2addrs := make(map[common.Address][]common.Address)
     var addrs []common.Address
-    var amounts []*big.Int
+    recordNo := 0
     for _, masternode := range *masternodes {
-        totalAmount = totalAmount.Add(totalAmount, masternode.Founders[0].Amount)
-        addrs = append(addrs, masternode.Founders[0].Addr)
-        amounts = append(amounts, masternode.Founders[0].Amount)
+        addr := masternode.Founders[0].Addr
+        amount := masternode.Founders[0].Amount
+        totalAmount = totalAmount.Add(totalAmount, amount)
+        if len(addr2amounts[addr]) == 0 {
+            addrs = append(addrs, addr)
+        }
+        addr2amounts[addr] = append(addr2amounts[addr], amount)
+        addr2addrs[addr] = append(addr2addrs[addr], masternode.Addr)
+        recordNo++
     }
     for _, supernode := range *supernodes {
-        totalAmount = totalAmount.Add(totalAmount, supernode.Founders[0].Amount)
-        addrs = append(addrs, supernode.Founders[0].Addr)
-        amounts = append(amounts, supernode.Founders[0].Amount)
+        addr := supernode.Founders[0].Addr
+        amount := supernode.Founders[0].Amount
+        totalAmount = totalAmount.Add(totalAmount, amount)
+        if len(addr2amounts[addr]) == 0 {
+            addrs = append(addrs, addr)
+        }
+        addr2amounts[addr] = append(addr2amounts[addr], amount)
+        addr2addrs[addr] = append(addr2addrs[addr], supernode.Addr)
+        recordNo++
     }
 
     contractNames := [2]string{"TransparentUpgradeableProxy", "AccountManager"}
@@ -69,19 +83,19 @@ func (s *AccountManagerStorage) Generate(alloc *types.GenesisAlloc) {
             account.Storage[common.HexToHash("0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103")] = common.HexToHash(ProxyAdminAddr)
 
             // record_no
-            s.buildRecordNo(&account, len(addrs))
+            s.buildRecordNo(&account, recordNo)
 
             // addr2records
-            s.buildAddr2records(&account, addrs, amounts)
+            s.buildAddr2records(&account, addrs, addr2amounts)
 
             // id2index
-            s.buildID2index(&account, addrs)
+            s.buildID2index(&account, addrs, addr2amounts)
 
             // id2addr
-            s.buildID2addr(&account, addrs)
+            s.buildID2addr(&account, addrs, addr2amounts)
 
             // id2useinfo
-            s.buildID2useInfo(&account, addrs)
+            s.buildID2useInfo(&account, addrs, addr2addrs)
         }
         (*alloc)[common.HexToAddress(contractAddrs[i])] = account
     }
@@ -135,93 +149,99 @@ func (s *AccountManagerStorage) buildRecordNo(account *types.GenesisAccount, cou
     account.Storage[storageKey] = storageValue
 }
 
-func (s *AccountManagerStorage) buildAddr2records(account *types.GenesisAccount, addrs []common.Address, amounts []*big.Int) {
+func (s *AccountManagerStorage) buildAddr2records(account *types.GenesisAccount, addrs []common.Address, addr2amounts map[common.Address][]*big.Int) {
     var curKey *big.Int
     var storageKey, storageValue common.Hash
 
-    for i, addr := range addrs {
+    id := int64(1)
+    for _, addr := range addrs {
         // size
         curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_address(103, addr))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(1))
+        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(len(addr2amounts[addr]))))
         account.Storage[storageKey] = storageValue
 
-        // id
-        curKey = big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(i+1)))
-        account.Storage[storageKey] = storageValue
-        // addr
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
-        account.Storage[storageKey] = storageValue
-        // amount
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, amounts[i])
-        account.Storage[storageKey] = storageValue
-        // lockDay
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720))
-        account.Storage[storageKey] = storageValue
-        // startHeight
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
-        account.Storage[storageKey] = storageValue
-        // unlockHeight
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720*24*3600/30))
-        account.Storage[storageKey] = storageValue
+        itemKey := big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
+        for _, amount := range addr2amounts[addr] {
+            // id
+            storageKey, storageValue = utils.GetStorage4Int(itemKey, big.NewInt(id))
+            account.Storage[storageKey] = storageValue
+            id++
+            // addr
+            itemKey = big.NewInt(0).Add(itemKey, big.NewInt(1))
+            storageKey, storageValue = utils.GetStorage4Addr(itemKey, addr)
+            account.Storage[storageKey] = storageValue
+            // amount
+            itemKey = big.NewInt(0).Add(itemKey, big.NewInt(1))
+            storageKey, storageValue = utils.GetStorage4Int(itemKey, amount)
+            account.Storage[storageKey] = storageValue
+            // lockDay
+            itemKey = big.NewInt(0).Add(itemKey, big.NewInt(1))
+            storageKey, storageValue = utils.GetStorage4Int(itemKey, big.NewInt(720))
+            account.Storage[storageKey] = storageValue
+            // startHeight
+            itemKey = big.NewInt(0).Add(itemKey, big.NewInt(1))
+            storageKey, storageValue = utils.GetStorage4Int(itemKey, big.NewInt(0))
+            account.Storage[storageKey] = storageValue
+            // unlockHeight
+            itemKey = big.NewInt(0).Add(itemKey, big.NewInt(1))
+            storageKey, storageValue = utils.GetStorage4Int(itemKey, big.NewInt(720*24*3600/30))
+            account.Storage[storageKey] = storageValue
+
+            itemKey = big.NewInt(0).Add(itemKey, big.NewInt(1))
+        }
     }
 }
 
-func (s *AccountManagerStorage) buildID2index(account *types.GenesisAccount, addrs []common.Address) {
+func (s *AccountManagerStorage) buildID2index(account *types.GenesisAccount, addrs []common.Address, addr2amounts map[common.Address][]*big.Int) {
     var curKey *big.Int
     var storageKey, storageValue common.Hash
 
-    for i := range addrs {
-        curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(104, int64(i+1)))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
-        account.Storage[storageKey] = storageValue
+    id := int64(1)
+    for _, addr := range addrs {
+        for i, _ := range addr2amounts[addr] {
+            curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(104, id))
+            storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(int64(i)))
+            account.Storage[storageKey] = storageValue
+            id++
+        }
     }
 }
 
-func (s *AccountManagerStorage) buildID2addr(account *types.GenesisAccount, addrs []common.Address) {
+func (s *AccountManagerStorage) buildID2addr(account *types.GenesisAccount, addrs []common.Address, addr2amounts map[common.Address][]*big.Int) {
     var curKey *big.Int
     var storageKey, storageValue common.Hash
 
-    for i, addr := range addrs {
-        curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(105, int64(i+1)))
-        storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
-        account.Storage[storageKey] = storageValue
+    id := int64(1)
+    for _, addr := range addrs {
+        for _, _ = range addr2amounts[addr] {
+            curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(105, id))
+            storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
+            account.Storage[storageKey] = storageValue
+            id++
+        }
     }
 }
 
-func (s *AccountManagerStorage) buildID2useInfo(account *types.GenesisAccount, addrs []common.Address) {
+func (s *AccountManagerStorage) buildID2useInfo(account *types.GenesisAccount, addrs []common.Address, addr2addrs map[common.Address][]common.Address) {
     var curKey *big.Int
     var storageKey, storageValue common.Hash
 
-    for i, addr := range addrs {
-        // frozenAddr
-        curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(106, int64(i+1)))
-        storageKey, storageValue = utils.GetStorage4Addr(curKey, addr)
-        account.Storage[storageKey] = storageValue
-        // freezeHeight
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
-        account.Storage[storageKey] = storageValue
-        // unfreezeHeight
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720*24*3600/30))
-        account.Storage[storageKey] = storageValue
-        // votedAddr
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Addr(curKey, common.Address{})
-        account.Storage[storageKey] = storageValue
-        // voteHeight
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
-        account.Storage[storageKey] = storageValue
-        // releaseHeight
-        curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
-        storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
-        account.Storage[storageKey] = storageValue
+    id := int64(1)
+    for _, addr := range addrs {
+        for _, targetAddr := range addr2addrs[addr] {
+            // frozenAddr
+            curKey = big.NewInt(0).SetBytes(utils.Keccak256_uint_uint(106, id))
+            storageKey, storageValue = utils.GetStorage4Addr(curKey, targetAddr)
+            account.Storage[storageKey] = storageValue
+            id++
+            // freezeHeight
+            curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
+            storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(0))
+            account.Storage[storageKey] = storageValue
+            // unfreezeHeight
+            curKey = big.NewInt(0).Add(curKey, big.NewInt(1))
+            storageKey, storageValue = utils.GetStorage4Int(curKey, big.NewInt(720*24*3600/30))
+            account.Storage[storageKey] = storageValue
+        }
     }
 }
