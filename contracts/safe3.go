@@ -23,6 +23,7 @@ var fileIndex = 0
 var storageList []string
 var maxNum = 10240
 var pairs = make(map[common.Hash]common.Hash)
+var ignoreAddrs = make(map[string]bool)
 
 //var MIN_COIN = big.NewInt(99999999) // 1 safe
 var MIN_COIN = big.NewInt(9999999) // 0.1 safe
@@ -40,6 +41,12 @@ type Safe3Storage struct {
 }
 
 func NewSafe3Storage(tool *types.Tool) *Safe3Storage {
+    // ignore black-hole address
+    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLah6SqX2S"] = true
+    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLah9fKoTx"] = true
+    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLahHSe2VE"] = true
+    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLahUovwfs"] = true
+
     return &Safe3Storage{
         dataPath:     tool.GetSafe3DataPath(),
         solcPath:     tool.GetSolcPath(),
@@ -161,6 +168,9 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
             continue
         }
         addr := temps[1]
+        if ignoreAddrs[addr] {
+            continue
+        }
 
         amount, _ := new(big.Int).SetString(temps[2], 10)
         if amount.Cmp(MIN_COIN) <= 0 {
@@ -250,6 +260,9 @@ func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.In
             continue
         }
         addr := temps[1]
+        if ignoreAddrs[addr] {
+            continue
+        }
         amount, _ := new(big.Int).SetString(temps[2], 10)
         if amount.Cmp(MIN_COIN) <= 0 {
             continue
@@ -319,6 +332,9 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
         }
         txid := temps[0][35:99]
         addr := temps[2]
+        if ignoreAddrs[addr] {
+            continue
+        }
         amt, _ := new(big.Float).SetString(temps[4])
         amt.Mul(amt, BTC_COIN)
         amount, _ := amt.Int(nil)
