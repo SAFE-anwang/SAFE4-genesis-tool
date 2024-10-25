@@ -359,10 +359,12 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
         isMN := false
         if len(masternodes[txid+"-"+temps[0][100:]]) != 0 { // masternode
             isMN = true
-            lockDay += 90              // add 3 months
-            remainLockHeight = 259200  // 3 months
             if realUnlockHeight > endHeight {
-                remainLockHeight += realUnlockHeight - endHeight
+                lockDay += 180  // add 6 months
+                remainLockHeight = realUnlockHeight - endHeight + 518400
+            } else {
+                lockDay = 90    // add 3 months
+                remainLockHeight = 259200
             }
         } else { // common lock
             if realUnlockHeight <= endHeight {
