@@ -23,7 +23,7 @@ var fileIndex = 0
 var storageList []string
 var maxNum = 10240
 var pairs = make(map[common.Hash]common.Hash)
-var ignoreAddrs = make(map[string]bool)
+var holeAddrs = make(map[string]bool)
 
 //var MIN_COIN = big.NewInt(99999999) // 1 safe
 var MIN_COIN = big.NewInt(9999999) // 0.1 safe
@@ -42,10 +42,10 @@ type Safe3Storage struct {
 
 func NewSafe3Storage(tool *types.Tool) *Safe3Storage {
     // ignore black-hole address
-    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLah6SqX2S"] = true
-    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLah9fKoTx"] = true
-    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLahHSe2VE"] = true
-    ignoreAddrs["XagqqFetxiDb9wbartKDrXgnqLahUovwfs"] = true
+    holeAddrs["XagqqFetxiDb9wbartKDrXgnqLah6SqX2S"] = true
+    holeAddrs["XagqqFetxiDb9wbartKDrXgnqLah9fKoTx"] = true
+    holeAddrs["XagqqFetxiDb9wbartKDrXgnqLahHSe2VE"] = true
+    holeAddrs["XagqqFetxiDb9wbartKDrXgnqLahUovwfs"] = true
 
     return &Safe3Storage{
         dataPath:     tool.GetSafe3DataPath(),
@@ -157,7 +157,9 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         panic(err)
     }
 
-    allAmount := big.NewInt(0)
+    holeAmount := big.NewInt(0) // all black-hole amount
+    ignoreAmount := big.NewInt(0) // all ignore available amount
+    allAmount := big.NewInt(0) // all available amount
     availableAmounts := make(map[string]*big.Int)
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
@@ -168,12 +170,10 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
             continue
         }
         addr := temps[1]
-        if ignoreAddrs[addr] {
-            continue
-        }
-
         amount, _ := new(big.Int).SetString(temps[2], 10)
-        if amount.Cmp(MIN_COIN) <= 0 {
+
+        if holeAddrs[addr] {
+            holeAmount.Add(holeAmount, amount)
             continue
         }
 
@@ -188,6 +188,7 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
 
         temp := big.NewInt(0).Sub(amount, lockedAmount)
         if temp.Cmp(MIN_COIN) <= 0 {
+            ignoreAmount.Add(ignoreAmount, temp)
             continue
         }
         if addr == "Xosb3bRv5bXunoKDrUj3XT7YUkSz47am2z" {
@@ -197,7 +198,7 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         availableAmounts[addr] = temp
     }
     totalAmount.Add(totalAmount, allAmount)
-    fmt.Printf("total amount: %d, available amount: %d, available address: %d\n", totalAmount, allAmount, len(availableAmounts))
+    fmt.Printf("total amount: %d, available amount: %d, available address: %d, black-hole amount: %d, ignore available amount: %d\n", totalAmount, allAmount, len(availableAmounts), holeAmount, ignoreAmount)
 
     file.Close()
     os.Remove(filepath.Join(s.dataPath, "balanceaddresses.csv"))
@@ -252,7 +253,7 @@ func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.In
     }
     defer file.Close()
 
-    allAmount := big.NewInt(0)
+    allAmount := big.NewInt(0) // all special amount
     specialAmounts := make(map[string]*big.Int)
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
@@ -263,9 +264,6 @@ func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.In
             continue
         }
         addr := temps[1]
-        if ignoreAddrs[addr] {
-            continue
-        }
         amount, _ := new(big.Int).SetString(temps[2], 10)
         if amount.Cmp(MIN_COIN) <= 0 {
             continue
@@ -316,7 +314,8 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
         panic(err)
     }
 
-    allLockdAmount := big.NewInt(0)
+    ignoreAmount := big.NewInt(0)
+    allAmount := big.NewInt(0) // all locked amount
     lockedInfos := make(map[string][]types.LockedData)
     lockedAmounts := make(map[string]*big.Int)
     lockedNum := int64(0)
@@ -335,15 +334,9 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
         }
         txid := temps[0][35:99]
         addr := temps[2]
-        if ignoreAddrs[addr] {
-            continue
-        }
         amt, _ := new(big.Float).SetString(temps[4])
         amt.Mul(amt, BTC_COIN)
         amount, _ := amt.Int(nil)
-        if amount.Cmp(MIN_COIN) <= 0 {
-            continue
-        }
         lockHeight, _ := strconv.Atoi(temps[5])
         unlockHeight, _ := strconv.Atoi(temps[6])
 
@@ -379,8 +372,13 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
             //}
         }
 
+        if amount.Cmp(MIN_COIN) <= 0 {
+            ignoreAmount.Add(ignoreAmount, amount)
+            continue
+        }
+
         lockedNum++
-        allLockdAmount.Add(allLockdAmount, amount)
+        allAmount.Add(allAmount, amount)
         if lockedAmounts[addr] == nil {
             lockedAmounts[addr] = amount
         } else {
@@ -393,8 +391,8 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
             IsMN:             isMN,
         })
     }
-    totalAmount.Add(totalAmount, allLockdAmount)
-    fmt.Printf("total amount: %d, locked amount: %d, locked record number: %d, locked address: %d\n", totalAmount, allLockdAmount, lockedNum, len(lockedAmounts))
+    totalAmount.Add(totalAmount, allAmount)
+    fmt.Printf("total amount: %d, locked amount: %d, locked record number: %d, locked address: %d, ignore locked amount: %d\n", totalAmount, allAmount, lockedNum, len(lockedAmounts), ignoreAmount)
 
     file.Close()
     os.Remove(filepath.Join(s.dataPath, "lockedaddresses.csv"))
