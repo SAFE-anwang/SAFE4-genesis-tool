@@ -190,6 +190,9 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         if temp.Cmp(MIN_COIN) <= 0 {
             continue
         }
+        if addr == "Xosb3bRv5bXunoKDrUj3XT7YUkSz47am2z" {
+            temp.Sub(temp, big.NewInt(5610100000000)) // 56101SAFE is used for SNs(10*5000) & MNs(6*1000) & contract-admin(100) & allocated balance (10*0.1)
+        }
         allAmount.Add(allAmount, temp)
         availableAmounts[addr] = temp
     }
