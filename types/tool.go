@@ -11,6 +11,7 @@ import (
     "math/big"
     "os"
     "path/filepath"
+    "runtime"
     "strings"
 )
 
@@ -30,7 +31,7 @@ func NewTool() (*Tool, error) {
     return &Tool{
         netType:   utils.GetNetType(),
         workPath:  filepath.Dir(ex),
-        depPath:   filepath.Join(filepath.Dir(ex), "..", "deps"),
+        depPath:   filepath.Join(filepath.Dir(ex), "deps"),
         isStorage: utils.IsStorage(),
     }, err
 }
@@ -85,42 +86,50 @@ func (t *Tool) GetContractPath() string {
 }
 
 func (t *Tool) GetSolcPath() string {
-    return filepath.Join(t.depPath, "solc.exe")
+    if runtime.GOOS == "windows" {
+        return filepath.Join(t.depPath, "solc-bin", "windows", "solc.exe")
+    } else if runtime.GOOS == "linux" {
+        return filepath.Join(t.depPath, "solc-bin", "linux", "solc")
+    } else if runtime.GOOS == "darwin" {
+        return filepath.Join(t.depPath, "solc-bin", "macos", "solc")
+    } else {
+        panic("Unsupported System")
+    }
 }
 
 func (t *Tool) GetGenesisPath() string {
     if t.netType == 0 {
-        return filepath.Join(t.workPath, "mainnet", "genesis.json")
+        return filepath.Join(t.workPath, "output", "mainnet", "genesis.json")
     } else {
-        return filepath.Join(t.workPath, "testnet", "genesis.json")
+        return filepath.Join(t.workPath, "output", "testnet", "genesis.json")
     }
 }
 
 func (t *Tool) GetSafe3StoragePath() string {
-    return filepath.Join(t.workPath, "safe3", "safe3storage")
+    return filepath.Join(t.workPath, "output", "safe3", "safe3storage")
 }
 
 func (t *Tool) GetABI4GoPath() string {
     if t.netType == 0 {
-        return filepath.Join(t.workPath, "mainnet", "contract_abi.go")
+        return filepath.Join(t.workPath, "output", "mainnet", "contract_abi.go")
     } else {
-        return filepath.Join(t.workPath, "testnet", "contract_abi.go")
+        return filepath.Join(t.workPath, "output", "testnet", "contract_abi.go")
     }
 }
 
 func (t *Tool) GetABI4JsPath() string {
     if t.netType == 0 {
-        return filepath.Join(t.workPath, "mainnet", "contract_abi.ts")
+        return filepath.Join(t.workPath, "output", "mainnet", "contract_abi.ts")
     } else {
-        return filepath.Join(t.workPath, "testnet", "contract_abi.ts")
+        return filepath.Join(t.workPath, "output", "testnet", "contract_abi.ts")
     }
 }
 
 func (t *Tool) GetABI4SwiftPath() string {
     if t.netType == 0 {
-        return filepath.Join(t.workPath, "mainnet", "Safe4ContractInfo.swift")
+        return filepath.Join(t.workPath, "output", "mainnet", "Safe4ContractInfo.swift")
     } else {
-        return filepath.Join(t.workPath, "testnet", "Safe4ContractInfo.swift")
+        return filepath.Join(t.workPath, "output", "testnet", "Safe4ContractInfo.swift")
     }
 }
 
