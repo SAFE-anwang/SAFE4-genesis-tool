@@ -109,6 +109,7 @@ func (s *SuperNodeStorageStorage) buildAddr2Info(account *types.GenesisAccount, 
         s.calcId(account, supernode, &curKey)
         s.calcName(account, supernode, &curKey)
         s.calcAddr(account, supernode, &curKey)
+        s.calcIsUnion(account, supernode, &curKey)
         s.calcCreator(account, supernode, &curKey)
         s.calcEnode(account, supernode, &curKey)
         s.calcDesc(account, supernode, &curKey)
@@ -136,6 +137,12 @@ func (s *SuperNodeStorageStorage) calcName(account *types.GenesisAccount, supern
 func (s *SuperNodeStorageStorage) calcAddr(account *types.GenesisAccount, supernode types.SuperNodeInfo, curKey **big.Int) {
     *curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
     storageKey, storageValue := utils.GetStorage4Addr(*curKey, supernode.Addr)
+    account.Storage[storageKey] = storageValue
+}
+
+func (s *SuperNodeStorageStorage) calcIsUnion(account *types.GenesisAccount, supernode types.SuperNodeInfo, curKey **big.Int) {
+    *curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+    storageKey, storageValue := utils.GetStorage4Bool(*curKey, supernode.IsUnion)
     account.Storage[storageKey] = storageValue
 }
 

@@ -105,6 +105,7 @@ func (s *MasterNodeStorageStorage) buildAddr2Info(account *types.GenesisAccount,
     for _, masternode := range *masternodes {
         s.calcId(account, masternode, &curKey)
         s.calcAddr(account, masternode, &curKey)
+        s.calcIsUnion(account, masternode, &curKey)
         s.calcCreator(account, masternode, &curKey)
         s.calcEnode(account, masternode, &curKey)
         s.calcDesc(account, masternode, &curKey)
@@ -124,6 +125,12 @@ func (s *MasterNodeStorageStorage) calcId(account *types.GenesisAccount, mastern
 func (s *MasterNodeStorageStorage) calcAddr(account *types.GenesisAccount, masternode types.MasterNodeInfo, curKey **big.Int) {
     *curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
     storageKey, storageValue := utils.GetStorage4Addr(*curKey, masternode.Addr)
+    account.Storage[storageKey] = storageValue
+}
+
+func (s *MasterNodeStorageStorage) calcIsUnion(account *types.GenesisAccount, masternode types.MasterNodeInfo, curKey **big.Int) {
+    *curKey = big.NewInt(0).Add(*curKey, big.NewInt(1))
+    storageKey, storageValue := utils.GetStorage4Bool(*curKey, masternode.IsUnion)
     account.Storage[storageKey] = storageValue
 }
 
