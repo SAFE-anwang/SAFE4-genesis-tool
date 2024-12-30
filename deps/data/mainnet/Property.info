@@ -11,6 +11,12 @@
   "createHeight": 0,
   "updateHeight": 0
 }, {
+   "name": "deposit_min_amount",
+   "value": 1000000000000000000,
+   "description": "min amount for depositing",
+   "createHeight": 0,
+   "updateHeight": 0
+}, {
    "name": "masternode_min_amount",
    "value": 1000,
    "description": "min lock amount for creator of independent masternode",
