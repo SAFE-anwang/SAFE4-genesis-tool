@@ -26,7 +26,6 @@ type MasterNodeStateInfo struct {
 type MasterNodeInfo struct {
     Id               *big.Int                `json:"id"            gencodec:"required"`
     Addr             common.Address          `json:"addr"          gencodec:"required"`
-    IsUnion          bool                    `json:"isUnion"       gencodec:"required"`
     Creator          common.Address          `json:"creator"       gencodec:"required"`
     Amount           *big.Int                `json:"amount"        gencodec:"required"`
     Enode            string                  `json:"enode"         gencodec:"required"`
@@ -35,6 +34,7 @@ type MasterNodeInfo struct {
     State            *big.Int                `json:"state"         gencodec:"required"`
     Founders         []MasterNodeMemberInfo  `json:"founders"      gencodec:"required"`
     IncentivePlan    MasterNodeIncentivePlan `json:"incentivePlan" gencodec:"required"`
+    IsUnion          bool                    `json:"isUnion"       gencodec:"required"`
     LastRewardHeight *big.Int                `json:"lastRewardHeight" gencodec:"required"`
     CreateHeight     *big.Int                `json:"createHeight"  gencodec:"required"`
     UpdateHeight     *big.Int                `json:"updateHeight"  gencodec:"required"`
