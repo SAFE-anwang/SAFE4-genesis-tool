@@ -2,3 +2,7 @@
 	path = deps/SAFE4-system-contract
 	url = https://github.com/SAFE-anwang/SAFE4-system-contract.git
 	branch = master
+[submodule "deps/SAFE4-system-contract-testnet"]
+	path = deps/SAFE4-system-contract-testnet
+	url = https://github.com/SAFE-anwang/SAFE4-system-contract.git
+	branch = testnet
