@@ -78,7 +78,11 @@ func (t *Tool) GetSafe3DataPath() string {
 }
 
 func (t *Tool) GetContractPath() string {
-    return filepath.Join(t.depPath, "SAFE4-system-contract")
+    if t.netType == 0 {
+        return filepath.Join(t.depPath, "SAFE4-system-contract")
+    } else {
+        return filepath.Join(t.depPath, "SAFE4-system-contract-testnet")
+    }
 }
 
 func (t *Tool) GetSolcPath() string {
