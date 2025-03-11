@@ -3,7 +3,7 @@
     "name": "supernode1",
     "addr": "0x56bd61043a8b3b0afb3be61d9818389e4921479f",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://6bccfe7840696f8e6fb9063681ac0773305d44d2db2fcf1516c1da775e32e2bdebca373846a0e9315cf8ba54953b4310ad9815b2183bc29fddfcc0d04d5f3417@194.195.213.226:30303",
     "description": "official supernode1",
@@ -11,7 +11,7 @@
     "state": 1,
     "founders": [{
       "lockID": 7,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -28,7 +28,7 @@
     "name": "supernode2",
     "addr": "0xa5b5c7c9983565e48eb96b5d59b8a52dbfab6b39",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://356f8ef776baa5564964b7f0ce88dc931434873d0499dd82da7a9c285a400a7e199ba94ea2fc8f2cd212e1b2a6c61a2e2a7113063bd98ba138df4fc9e16ef488@192.46.213.88:30303",
     "description": "official supernode2",
@@ -36,7 +36,7 @@
     "state": 1,
     "founders": [{
       "lockID": 8,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -53,7 +53,7 @@
     "name": "supernode3",
     "addr": "0xfac0e1eb115987befd23a926b3c7455405b40ba2",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://24d0f25d471170bf910a72d35f076f326840b745c7f0a5cde48edc71ffdfaa65dc34d8d4f74640a3f49808a08cf32b0b81feefcfa95e3672137e08720ac59a08@45.79.239.211:30303",
     "description": "official supernode3",
@@ -61,7 +61,7 @@
     "state": 1,
     "founders": [{
       "lockID": 9,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -78,7 +78,7 @@
     "name": "supernode4",
     "addr": "0x29639e2e9074e8921f97ebace75ac395d84e204b",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://c147bf218583451b43e608cb1adfa50b91a2eeba5c8e677dbbcfaaf0ade53e2234513549023cb1ce7764273d426258aed59d3fa1ce42ac91ba6ca9ee297a3c35@172.104.50.182:30303",
     "description": "official supernode4",
@@ -86,7 +86,7 @@
     "state": 1,
     "founders": [{
       "lockID": 10,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -103,7 +103,7 @@
     "name": "supernode5",
     "addr": "0x41425c2c3170b24cf0ff2956d01716bb261d76a9",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://3f2601d4fa1150cd5602e34c07bfce75867ce8fead6f032a7047f55e5aee4ecf6d82089a5e698711a3d16aa9b78b6589c8ff275032867fe2d89abb87ba697eb3@139.162.20.107:30303",
     "description": "official supernode5",
@@ -111,7 +111,7 @@
     "state": 1,
     "founders": [{
       "lockID": 11,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -128,7 +128,7 @@
     "name": "supernode6",
     "addr": "0xf90468ab8f991d8776629e1ec48339426e75f2c8",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://6c9f55ded2b55b5d8af271e8e2b3cf69cad801854f5317d65496677f245d9acd3e68751acad25dff0fa58bfd4f8cdf7c638d782eb72ae59edf6bd90a5bba9b7a@172.104.41.183:30303",
     "description": "official supernode6",
@@ -136,7 +136,7 @@
     "state": 1,
     "founders": [{
       "lockID": 12,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -153,7 +153,7 @@
     "name": "supernode7",
     "addr": "0xbe5072094d8b253a65bfb52b7733a0137b84c74c",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://ed65b19a8e0b9a78ce8cce095679fa45b6033e6966f7c0adfa3030676f3495c05234a02264c79986c2bf759c8b9469a98d04a77066920579df0277d28848ff2e@172.105.112.125:30303",
     "description": "official supernode7",
@@ -161,7 +161,7 @@
     "state": 1,
     "founders": [{
       "lockID": 13,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -178,7 +178,7 @@
     "name": "supernode8",
     "addr": "0x163f5b78d1260f334e6e9de0dc5f1316f9c11e17",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://68d174b7dc9d7a2fc7cbad460056b37b336ef941d92bf0ec7e69f794f1348569c5e3d0e61874b9838850c285485f4ab502d130c00e52d6f05374597a13999e65@172.105.196.229:30303",
     "description": "official supernode8",
@@ -186,7 +186,7 @@
     "state": 1,
     "founders": [{
       "lockID": 14,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -203,7 +203,7 @@
     "name": "supernode9",
     "addr": "0xfd5a3eae9f7a0dcbdf760a662e6ab92d7a834f2a",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://02d2893ccb8e2a2bbb6d081879231e34cfad602c8bad35bd96e1c884408888dab082b2624e6cc52b7a5cf50d5d95496f2765023c4b0bf5e22be4fd3b8261effc@139.162.123.100:30303",
     "description": "official supernode9",
@@ -211,7 +211,7 @@
     "state": 1,
     "founders": [{
       "lockID": 15,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
@@ -228,7 +228,7 @@
     "name": "supernode10",
     "addr": "0x017993e50e49e0f62157c5db40225adf2aee8aec",
     "isUnion": false,
-    "creator": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 5000000000000000000000,
     "enode": "enode://0c4e750dc9c80530fbd76276c15fb2e9341f83914a98dda757a469541f1e9860be784d9fe38b4dc0aefe968496ed14edd3e58d58b96e12008fad2b9d162b9df7@139.162.103.9:30303",
     "description": "official supernode10",
@@ -236,7 +236,7 @@
     "state": 1,
     "founders": [{
       "lockID": 16,
-      "addr": "0x30bdfc7b95e8a9abb2b56da9f70a2bab52ad8de5",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 5000000000000000000000,
       "height": 0
     }],
