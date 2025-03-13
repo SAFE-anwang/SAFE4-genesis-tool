@@ -45,14 +45,34 @@ func (t *Tool) GetChainID() *big.Int {
 }
 
 func (t *Tool) GetOwnerAddress() string {
+    return "0x0000000000000000000000000000000000001103" // timelock contract address
+}
+
+func (t *Tool) GetMultiSigOwners() []string {
     if t.netType == 0 {
-        return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
+        return []string{
+            "0x345ec0f7cbc5ec4f93382ef4a6c7af4ee4c52e03",
+            "0x0f4f7cdc5baf347ab82a891ed16ba086cbaf5120",
+            "0x5d49a4e9c448e8d8e4d1bb4d1516182de47e9053",
+            "0xa5481ced0ebaabbbf805c2740b6b08b00fb5913e",
+            "0x11bd05d16f13df64b67b774d07fcdbe38537bd56",
+        }
     } else {
-        return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
+        return []string{
+            "0x345ec0f7cbc5ec4f93382ef4a6c7af4ee4c52e03",
+            "0x0f4f7cdc5baf347ab82a891ed16ba086cbaf5120",
+            "0x5d49a4e9c448e8d8e4d1bb4d1516182de47e9053",
+            "0xa5481ced0ebaabbbf805c2740b6b08b00fb5913e",
+            "0x11bd05d16f13df64b67b774d07fcdbe38537bd56",
+        }
     }
 }
 
-func (t *Tool) GetOwnerBalance() *big.Int {
+func (t *Tool) GetCoinbase() string {
+    return "0xac110c0f70867f77d9d230e377043f52480a0b7d"
+}
+
+func (t *Tool) GetCoinbaseBalance() *big.Int {
     balance, _ := new(big.Int).SetString("100000000000000000000", 10)
     if t.netType == 0 {
         return balance
@@ -157,7 +177,7 @@ func (t *Tool) GenerateBase() {
     t.genesis.GasLimit = 0xffffffff
     t.genesis.Difficulty = "0x01"
     t.genesis.Mixhash = common.Hash{}
-    t.genesis.Coinbase = common.HexToAddress(t.GetOwnerAddress())
+    t.genesis.Coinbase = common.HexToAddress(t.GetCoinbase())
     t.genesis.Number = "0"
     t.genesis.GasUsed = "0"
     t.genesis.ParentHash = common.Hash{}
@@ -172,7 +192,7 @@ func (t *Tool) setBalance(addr common.Address, balance *big.Int) {
 
 func (t *Tool) AllocBalance() {
     // alloc balance to owner
-    t.setBalance(common.HexToAddress(t.GetOwnerAddress()), t.GetOwnerBalance())
+    t.setBalance(common.HexToAddress(t.GetCoinbase()), t.GetCoinbaseBalance())
     // alloc balance to supernodes
     sns := t.loadSuperNode()
     for _, sn := range *sns {
