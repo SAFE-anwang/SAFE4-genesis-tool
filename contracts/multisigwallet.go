@@ -39,6 +39,9 @@ func (s *MultiSigStorage) Generate(alloc *types.GenesisAlloc) {
 
 	account.Storage = make(map[common.Hash]common.Hash)
 
+	// minDelay
+	s.buildMinDelay(&account)
+
 	// required
 	s.buildRequired(&account)
 
@@ -53,18 +56,24 @@ func (s *MultiSigStorage) Generate(alloc *types.GenesisAlloc) {
 	os.RemoveAll(filepath.Join(s.contractPath, "temp"))
 }
 
-func (s *MultiSigStorage) buildRequired(account *types.GenesisAccount) {
+func (s *MultiSigStorage) buildMinDelay(account *types.GenesisAccount) {
 	curKey := big.NewInt(0)
+	storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(600))
+	account.Storage[storageKey] = storageValue
+}
+
+func (s *MultiSigStorage) buildRequired(account *types.GenesisAccount) {
+	curKey := big.NewInt(1)
 	storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(3))
 	account.Storage[storageKey] = storageValue
 }
 
 func (s *MultiSigStorage) buildOwners(account *types.GenesisAccount) {
-	storageKey := common.BigToHash(big.NewInt(1))
+	storageKey := common.BigToHash(big.NewInt(2))
 	storageValue := common.BigToHash(big.NewInt(int64(len(s.owners))))
 	account.Storage[storageKey] = storageValue
 
-	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(1))
+	subKey := big.NewInt(0).SetBytes(utils.Keccak256_uint(2))
 	for i, owner := range s.owners {
 		curKey := big.NewInt(0).Add(subKey, big.NewInt(int64(i)))
 		subStorageKey, subStorageValue := utils.GetStorage4Addr(curKey, common.HexToAddress(owner))
@@ -74,7 +83,7 @@ func (s *MultiSigStorage) buildOwners(account *types.GenesisAccount) {
 
 func (s *MultiSigStorage) buildIsOwner(account *types.GenesisAccount) {
 	for _, owner := range s.owners {
-		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_address(2, common.HexToAddress(owner)))
+		curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_address(3, common.HexToAddress(owner)))
 		storageKey, storageValue := utils.GetStorage4Bool(curKey, true)
 		account.Storage[storageKey] = storageValue
 	}

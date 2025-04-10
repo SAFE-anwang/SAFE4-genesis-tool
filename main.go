@@ -30,7 +30,6 @@ func main() {
     contracts.NewMulticallStorage(tool).Generate(tool.GetGenesisAlloc())
     contracts.NewWSafeStorage(tool).Generate(tool.GetGenesisAlloc())
     contracts.NewMultiSigStorage(tool).Generate(tool.GetGenesisAlloc())
-    contracts.NewTimeLockStorage(tool).Generate(tool.GetGenesisAlloc())
 
     tool.SaveGenesis()
     tool.SaveABI()

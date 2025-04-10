@@ -45,7 +45,7 @@ func (t *Tool) GetChainID() *big.Int {
 }
 
 func (t *Tool) GetOwnerAddress() string {
-    return "0x0000000000000000000000000000000000001103" // timelock contract address
+    return "0x0000000000000000000000000000000000001102" // multisig contract address
 }
 
 func (t *Tool) GetMultiSigOwners() []string {
