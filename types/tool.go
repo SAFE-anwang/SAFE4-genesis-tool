@@ -51,11 +51,11 @@ func (t *Tool) GetOwnerAddress() string {
 func (t *Tool) GetMultiSigOwners() []string {
     if t.netType == 0 {
         return []string{
-            "0x345ec0f7cbc5ec4f93382ef4a6c7af4ee4c52e03",
-            "0x0f4f7cdc5baf347ab82a891ed16ba086cbaf5120",
-            "0x5d49a4e9c448e8d8e4d1bb4d1516182de47e9053",
-            "0xa5481ced0ebaabbbf805c2740b6b08b00fb5913e",
-            "0x11bd05d16f13df64b67b774d07fcdbe38537bd56",
+            "0x37bb40810c85c6a8a1e7497044827c62bdc37654",
+            "0x7b9d6af104c84aec494b807ee582832078abe2d1",
+            "0x78542d1c939892542E4E0801b8A84b582678d45F",
+            "0x8787e6e9480bAaf8D1B6C29C3aEa95Eb93f67807",
+            "0x825D1A52Ac19Cb557D9f8E89515637c332648D6f",
         }
     } else {
         return []string{
