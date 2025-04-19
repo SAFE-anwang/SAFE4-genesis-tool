@@ -106,4 +106,10 @@
      "description": "reward percent for miner(0 - 100)",
      "createHeight": 0,
      "updateHeight": 0
+}, {
+     "name": "reward_maturity",
+     "value": 500,
+     "description": "reward be spent after this number of new blocks",
+     "createHeight": 0,
+     "updateHeight": 0
 }]
