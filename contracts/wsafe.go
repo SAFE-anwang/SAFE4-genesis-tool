@@ -34,7 +34,41 @@ func (s *WSafeStorage) Generate(alloc *types.GenesisAlloc) {
         Balance: big.NewInt(0).String(),
         Code:    "0x" + string(code),
     }
+
+    account.Storage = make(map[common.Hash]common.Hash)
+
+    // name
+    s.buildName(&account)
+
+    // symbol
+    s.buildSymbol(&account)
+
+    // decimal
+    s.buildDecimal(&account)
+
     (*alloc)[common.HexToAddress("0x0000000000000000000000000000000000001101")] = account
 
     os.RemoveAll(filepath.Join(s.contractPath, "temp"))
+}
+
+func (s *WSafeStorage) buildName(account *types.GenesisAccount) {
+    curKey := big.NewInt(0)
+    storageKeys, storageValues := utils.GetStorage4String(curKey, "Wrapped SAFE")
+    for i := range storageKeys {
+        account.Storage[storageKeys[i]] = storageValues[i]
+    }
+}
+
+func (s *WSafeStorage) buildSymbol(account *types.GenesisAccount) {
+    curKey := big.NewInt(1)
+    storageKeys, storageValues := utils.GetStorage4String(curKey, "WSAFE")
+    for i := range storageKeys {
+        account.Storage[storageKeys[i]] = storageValues[i]
+    }
+}
+
+func (s *WSafeStorage) buildDecimal(account *types.GenesisAccount) {
+    curKey := big.NewInt(2)
+    storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(18))
+    account.Storage[storageKey] = storageValue
 }
