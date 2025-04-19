@@ -194,10 +194,10 @@ func (t *Tool) AllocBalance() {
     // alloc balance to owner
     t.setBalance(common.HexToAddress(t.GetCoinbase()), t.GetCoinbaseBalance())
     // alloc balance to supernodes
-    sns := t.loadSuperNode()
-    for _, sn := range *sns {
-        t.setBalance(sn.Addr, big.NewInt(100000000000000000)) // alloc sn 0.1 for upload-node-state
-    }
+    //sns := t.loadSuperNode()
+    //for _, sn := range *sns {
+    //    t.setBalance(sn.Addr, big.NewInt(100000000000000000)) // alloc sn 0.1 for upload-node-state
+    //}
 }
 
 func (t *Tool) SaveGenesis() {
