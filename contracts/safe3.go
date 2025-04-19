@@ -321,7 +321,7 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
     lockedNum := int64(0)
 
     BTC_COIN := new(big.Float).SetInt(big.NewInt(100000000))
-    endHeight := 6211330
+    endHeight := 6641150
     sposHeight := 1092826
 
     scanner := bufio.NewScanner(file)

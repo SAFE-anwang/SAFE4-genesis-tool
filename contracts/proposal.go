@@ -37,7 +37,7 @@ func (s *ProposalStorage) Generate(alloc *types.GenesisAlloc) {
         }
 
         account := types.GenesisAccount{
-            Balance: big.NewInt(0).String(),
+            Balance: "3709370017000000000000",
             Code:    "0x" + string(code),
         }
         if contractNames[i] == "TransparentUpgradeableProxy" {
