@@ -191,7 +191,7 @@ func (t *Tool) setBalance(addr common.Address, balance *big.Int) {
 }
 
 func (t *Tool) AllocBalance() {
-    // alloc balance to owner
+    // alloc balance to coinbase
     t.setBalance(common.HexToAddress(t.GetCoinbase()), t.GetCoinbaseBalance())
     // alloc balance to supernodes
     //sns := t.loadSuperNode()
