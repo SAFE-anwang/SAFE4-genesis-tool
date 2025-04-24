@@ -2,7 +2,7 @@
     "id": 1,
     "addr": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
     "isUnion": false,
-    "creator": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 1000000000000000000000,
     "enode": "enode://7d9cd0f84db59f040755bb7475fddd5190521db7373e6a3d8bf35b95727851821ab7e8dcb1ad3ea89f6a7d5d2e82e052b23a2a53ea5a9a86d708c7a02d2913c8@10.0.0.202:30303",
     "description": "official masternode1",
@@ -10,7 +10,7 @@
     "state": 1,
     "founders": [{
       "lockID": 1,
-      "addr": "0xa7705a20fa3cf57548acdef5472b0d484db4c973",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 1000000000000000000000,
       "height": 0
     }],
@@ -26,7 +26,7 @@
     "id": 2,
     "addr": "0x43d0faa7f14407137796a89bb5cf3ce2236943c2",
     "isUnion": false,
-    "creator": "0x43d0faa7f14407137796a89bb5cf3ce2236943c2",
+    "creator": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
     "amount": 1000000000000000000000,
     "enode": "enode://a7470f55fa1921b401eb66503d87857cb0840a65407c41016f10557ccd6bdf454bc38fa17629fd19ce66ca89445a92516b3f3f33ff7fed3f9ebdbdd2bb261358@10.0.0.164:30303",
     "description": "official masternode2",
@@ -34,7 +34,7 @@
     "state": 1,
     "founders": [{
       "lockID": 2,
-      "addr": "0x43d0faa7f14407137796a89bb5cf3ce2236943c2",
+      "addr": "0xa8f2aa794181d27dfbe30c5ae70f9cb7f3eae221",
       "amount": 1000000000000000000000,
       "height": 0
     }],
