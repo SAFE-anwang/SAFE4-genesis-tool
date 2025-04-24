@@ -159,6 +159,7 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
 
     holeAmount := big.NewInt(0) // all black-hole amount
     ignoreAmount := big.NewInt(0) // all ignore available amount
+    ignores := make(map[string]int64)
     allAmount := big.NewInt(0) // all available amount
     availableAmounts := make(map[string]*big.Int)
     scanner := bufio.NewScanner(file)
@@ -189,6 +190,9 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         temp := big.NewInt(0).Sub(amount, lockedAmount)
         if temp.Cmp(MIN_COIN) <= 0 {
             ignoreAmount.Add(ignoreAmount, temp)
+            if amount.Int64() != 0 {
+                ignores[addr] += amount.Int64()
+            }
             continue
         }
         if addr == "Xosb3bRv5bXunoKDrUj3XT7YUkSz47am2z" {
@@ -198,7 +202,7 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         availableAmounts[addr] = temp
     }
     totalAmount.Add(totalAmount, allAmount)
-    fmt.Printf("total amount: %d, available amount: %d, available address: %d, black-hole amount: %d, ignore available amount: %d\n", totalAmount, allAmount, len(availableAmounts), holeAmount, ignoreAmount)
+    fmt.Printf("total amount: %d, available amount: %d, available address: %d, black-hole amount: %d, ignore available amount: %d, ignore address num: %d\n", totalAmount, allAmount, len(availableAmounts), holeAmount, ignoreAmount, len(ignores))
 
     file.Close()
     os.Remove(filepath.Join(s.dataPath, "balanceaddresses.csv"))
@@ -315,6 +319,7 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
     }
 
     ignoreAmount := big.NewInt(0)
+    ignores := make(map[string]int64)
     allAmount := big.NewInt(0) // all locked amount
     lockedInfos := make(map[string][]types.LockedData)
     lockedAmounts := make(map[string]*big.Int)
@@ -374,6 +379,9 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
 
         if amount.Cmp(MIN_COIN) <= 0 {
             ignoreAmount.Add(ignoreAmount, amount)
+            if amount.Int64() != 0 {
+                ignores[addr] += amount.Int64()
+            }
             continue
         }
 
@@ -392,7 +400,7 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
         })
     }
     totalAmount.Add(totalAmount, allAmount)
-    fmt.Printf("total amount: %d, locked amount: %d, locked record number: %d, locked address: %d, ignore locked amount: %d\n", totalAmount, allAmount, lockedNum, len(lockedAmounts), ignoreAmount)
+    fmt.Printf("total amount: %d, locked amount: %d, locked record number: %d, locked address: %d, ignore locked amount: %d, ignore address num: %d\n", totalAmount, allAmount, lockedNum, len(lockedAmounts), ignoreAmount, len(ignores))
 
     file.Close()
     os.Remove(filepath.Join(s.dataPath, "lockedaddresses.csv"))
