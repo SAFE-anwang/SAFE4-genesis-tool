@@ -26,7 +26,8 @@ var pairs = make(map[common.Hash]common.Hash)
 var holeAddrs = make(map[string]bool)
 
 //var MIN_COIN = big.NewInt(99999999) // 1 safe
-var MIN_COIN = big.NewInt(9999999) // 0.1 safe
+//var MIN_COIN = big.NewInt(9999999) // 0.1 safe
+var MIN_COIN = big.NewInt(2999999) // 0.03 safe
 //var MIN_COIN = big.NewInt(999999) // 0.01 safe
 //var MIN_COIN = big.NewInt(99999) // 0.001 safe
 //var MIN_COIN = common.Big0
