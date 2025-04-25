@@ -37,10 +37,11 @@ func (s *ProposalStorage) Generate(alloc *types.GenesisAlloc) {
         }
 
         account := types.GenesisAccount{
-            Balance: "820274538900000000000",
+            Balance: big.NewInt(0).String(),
             Code:    "0x" + string(code),
         }
         if contractNames[i] == "TransparentUpgradeableProxy" {
+            account.Balance = "820274538900000000000"
             account.Storage = make(map[common.Hash]common.Hash)
             account.Storage[common.BigToHash(big.NewInt(0))] = common.BigToHash(big.NewInt(1))
             account.Storage[common.BigToHash(big.NewInt(0x33))] = common.HexToHash(s.ownerAddr)
