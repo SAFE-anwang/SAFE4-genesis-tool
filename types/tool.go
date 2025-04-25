@@ -172,7 +172,11 @@ func (t *Tool) GenerateBase() {
         Spos:                &params.SposConfig{Epoch: 200},
     }
     t.genesis.Nonce = "0"
-    t.genesis.Timestamp = 0x6375F7B9
+    if t.netType == 0 {
+        t.genesis.Timestamp = 0x680C4C30 // 2025-04-26 11:00:00
+    } else {
+        t.genesis.Timestamp = 0x680AFAB0 // 2025-04-25 11:00:00
+    }
     t.genesis.ExtraData = "0x0000000000000000000000000000000000000000000000000000000000000000"
     t.genesis.GasLimit = 0xffffffff
     t.genesis.Difficulty = "0x01"
