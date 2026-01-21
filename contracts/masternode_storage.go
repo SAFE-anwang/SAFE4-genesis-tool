@@ -65,8 +65,8 @@ func (s *MasterNodeStorageStorage) Generate(alloc *types.GenesisAlloc) {
             // id2addr
             s.buildID2Addr(&account, masternodes)
 
-            // enode2addr
-            s.buildEnode2Addr(&account, masternodes)
+            // enode2ids
+            s.buildEnode2IDs(&account, masternodes)
         }
         (*alloc)[common.HexToAddress(contractAddrs[i])] = account
     }
@@ -240,10 +240,14 @@ func (s *MasterNodeStorageStorage) buildID2Addr(account *types.GenesisAccount, m
     }
 }
 
-func (s *MasterNodeStorageStorage) buildEnode2Addr(account *types.GenesisAccount, masternodes *[]types.MasterNodeInfo) {
+func (s *MasterNodeStorageStorage) buildEnode2IDs(account *types.GenesisAccount, masternodes *[]types.MasterNodeInfo) {
     for _, masternode := range *masternodes {
-        curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(105, masternode.Enode))
-        storageKey, storageValue := utils.GetStorage4Addr(curKey, masternode.Addr)
+        curKey := big.NewInt(0).SetBytes(utils.Keccak256_uint_string(106, masternode.Enode))
+        storageKey, storageValue := utils.GetStorage4Int(curKey, big.NewInt(1))
+        account.Storage[storageKey] = storageValue
+
+        itemKey := big.NewInt(0).SetBytes(utils.Keccak256_bytes32(common.BigToHash(curKey).Hex()))
+        storageKey, storageValue = utils.GetStorage4Int(itemKey, masternode.Id)
         account.Storage[storageKey] = storageValue
     }
 }
