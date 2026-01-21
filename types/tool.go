@@ -231,7 +231,11 @@ func (t *Tool) SaveABI() {
     solcPath := t.GetSolcPath()
     contractPath := t.GetContractPath()
     for _, fileName := range contractNames {
-        utils.GetABI(solcPath, contractPath, fileName+".sol")
+        if fileName == "Multicall" {
+            utils.GetABI(solcPath, contractPath, "additions/Multicall.sol")
+        } else {
+            utils.GetABI(solcPath, contractPath, fileName+".sol")
+        }
         abiFile := filepath.Join(contractPath, "temp", fileName+".abi")
         content, err := os.ReadFile(abiFile)
         if err != nil {

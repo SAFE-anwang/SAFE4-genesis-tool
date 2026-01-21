@@ -22,7 +22,7 @@ func NewWSafeStorage(tool *types.Tool) *WSafeStorage {
 }
 
 func (s *WSafeStorage) Generate(alloc *types.GenesisAlloc) {
-    utils.Compile(s.solcPath, s.contractPath, "WSafe.sol")
+    utils.Compile(s.solcPath, s.contractPath, "additions/WSafe.sol")
 
     codePath := filepath.Join(s.contractPath, "temp", "WSafe.bin-runtime")
     code, err := os.ReadFile(codePath)

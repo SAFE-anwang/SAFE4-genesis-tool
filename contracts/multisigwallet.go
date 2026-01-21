@@ -24,7 +24,7 @@ func NewMultiSigStorage(tool *types.Tool) *MultiSigStorage {
 }
 
 func (s *MultiSigStorage) Generate(alloc *types.GenesisAlloc) {
-	utils.Compile(s.solcPath, s.contractPath, "MultisigWallet.sol")
+	utils.Compile(s.solcPath, s.contractPath, "additions/MultisigWallet.sol")
 
 	codePath := filepath.Join(s.contractPath, "temp", "MultisigWallet.bin-runtime")
 	code, err := os.ReadFile(codePath)

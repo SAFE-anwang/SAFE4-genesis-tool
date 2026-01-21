@@ -22,7 +22,7 @@ func NewMulticallStorage(tool *types.Tool) *MulticallStorage {
 }
 
 func (s *MulticallStorage) Generate(alloc *types.GenesisAlloc) {
-    utils.Compile(s.solcPath, s.contractPath, "Multicall.sol")
+    utils.Compile(s.solcPath, s.contractPath, "additions/Multicall.sol")
 
     codePath := filepath.Join(s.contractPath, "temp", "Multicall.bin-runtime")
     code, err := os.ReadFile(codePath)
