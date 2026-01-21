@@ -191,8 +191,8 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         temp := big.NewInt(0).Sub(amount, lockedAmount)
         if temp.Cmp(MIN_COIN) <= 0 {
             ignoreAmount.Add(ignoreAmount, temp)
-            if amount.Int64() != 0 {
-                ignores[addr] += amount.Int64()
+            if temp.Int64() != 0 {
+                ignores[addr] += temp.Int64()
             }
             continue
         }
@@ -207,6 +207,24 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
 
     file.Close()
     os.Remove(filepath.Join(s.dataPath, "balanceaddresses.csv"))
+
+    /*
+    var kvSlice []KeyValue
+    for k, v := range ignores {
+        kvSlice = append(kvSlice, KeyValue{k, v})
+    }
+    sort.Slice(kvSlice, func(i, j int) bool {
+        return kvSlice[i].Value > kvSlice[j].Value
+    })
+    tempFile, _ := os.Create("C:\\Users\\Administrator\\Desktop\\available_sorted.txt")
+    for _, kv := range kvSlice {
+        content := fmt.Sprintf("%s,%d,%s\n", kv.Key, kv.Value, strconv.FormatFloat(float64(kv.Value)/100000000.0, 'f', 8, 64))
+        content = strings.TrimRight(content, "0")
+        content = strings.TrimRight(content, ".")
+        tempFile.WriteString(content)
+    }
+    tempFile.Close()
+    */
 
     if s.isStorage {
         // split availables
@@ -249,6 +267,11 @@ func (s *Safe3Storage) loadBalance(lockedAmounts map[string]*big.Int, specialAmo
         }
     }
     return availableAmounts
+}
+
+type KeyValue struct {
+    Key   string
+    Value int64
 }
 
 func (s *Safe3Storage) loadSpecialInfos(totalAmount *big.Int) map[string]*big.Int {
@@ -405,6 +428,24 @@ func (s *Safe3Storage) loadLockedInfos(totalAmount *big.Int) map[string]*big.Int
 
     file.Close()
     os.Remove(filepath.Join(s.dataPath, "lockedaddresses.csv"))
+
+    /*
+    var kvSlice []KeyValue
+    for k, v := range ignores {
+        kvSlice = append(kvSlice, KeyValue{k, v})
+    }
+    sort.Slice(kvSlice, func(i, j int) bool {
+        return kvSlice[i].Value > kvSlice[j].Value
+    })
+    tempFile, _ := os.Create("C:\\Users\\Administrator\\Desktop\\lock_sorted.txt")
+    for _, kv := range kvSlice {
+        content := fmt.Sprintf("%s,%d,%s\n", kv.Key, kv.Value, strconv.FormatFloat(float64(kv.Value)/100000000.0, 'f', 8, 64))
+        content = strings.TrimRight(content, "0")
+        content = strings.TrimRight(content, ".")
+        tempFile.WriteString(content)
+    }
+    tempFile.Close()
+    */
 
     if s.isStorage {
         // split locks
